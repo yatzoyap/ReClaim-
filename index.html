@@ -17,213 +17,33 @@
             --text-muted: #94a3b8;
             --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text);
-            overflow-x: hidden;
-        }
-
-        /* Navbar */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(30, 41, 59, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
-
-        /* Floating Panel */
-        #floating-panel {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--surface);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 300px;
-            z-index: 999;
-            border: 1px solid rgba(108, 99, 255, 0.2);
-            transition: var(--transition);
-        }
-
-        #floating-panel h3 {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            color: var(--primary);
-        }
-
-        .registered-item {
-            background: rgba(255,255,255,0.05);
-            padding: 0.8rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        /* Sections */
-        .page-section {
-            opacity: 0;
-            transform: translateY(20px);
-            display: none;
-            padding: 6rem 2rem 4rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            min-height: 100vh;
-            animation: fadeIn var(--transition) forwards;
-        }
-
-        .page-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Forms & Inputs */
-        .card {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 16px;
-            max-width: 600px;
-            margin: 2rem auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 1rem;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: var(--text);
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
-        }
-
-        /* Buttons & Animations */
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(108, 99, 255, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Ripple Effect for Satisfying Animation */
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        .btn:focus:not(:active)::after {
-            animation: ripple 1s ease-out;
-        }
-
-        @keyframes ripple {
-            0% { transform: scale(0, 0); opacity: 0.5; }
-            100% { transform: scale(100, 100); opacity: 0; }
-        }
-
-        /* Home Page Grid */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .action-card {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 16px;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: var(--transition);
-        }
-
-        .action-card:hover {
-            border-color: var(--primary);
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.2);
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text); overflow-x: hidden; }
+        nav { position: fixed; top: 0; width: 100%; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .nav-links { display: flex; gap: 1.5rem; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        #floating-panel { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface); padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 300px; z-index: 999; border: 1px solid rgba(108, 99, 255, 0.2); transition: var(--transition); }
+        #floating-panel h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--primary); }
+        .registered-item { background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .page-section { opacity: 0; transform: translateY(20px); display: none; padding: 6rem 2rem 4rem; max-width: 1200px; margin: 0 auto; min-height: 100vh; animation: fadeIn var(--transition) forwards; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--surface); padding: 2rem; border-radius: 16px; max-width: 600px; margin: 2rem auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px 16px; margin-bottom: 1rem; border: 1px solid #334155; background: #0f172a; color: var(--text); border-radius: 8px; transition: var(--transition); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2); }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: var(--transition); width: 100%; position: relative; overflow: hidden; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(108, 99, 255, 0.4); }
+        .btn:active { transform: translateY(1px); }
+        .btn::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255, 255, 255, 0.5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%; }
+        .btn:focus:not(:active)::after { animation: ripple 1s ease-out; }
+        @keyframes ripple { 0% { transform: scale(0, 0); opacity: 0.5; } 100% { transform: scale(100, 100); opacity: 0; } }
+        .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .action-card { background: var(--surface); padding: 2rem; border-radius: 16px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+        .action-card:hover { border-color: var(--primary); transform: scale(1.05); box-shadow: 0 10px 30px rgba(108, 99, 255, 0.2); }
         h1, h2 { color: var(--primary); margin-bottom: 1rem; }
         p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            background: var(--primary);
-        }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; background: var(--primary); }
     </style>
 </head>
 <body onload="generatePublicCode()">
@@ -244,7 +64,6 @@
         <h3>Your Items Dashboard</h3>
         <div id="items-list">
             <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
-            <!-- Dynamic items will appear here -->
         </div>
     </div>
 
@@ -284,14 +103,11 @@
         <div class="card">
             <h2>Register New Item</h2>
             <p>Secure your asset on the blockchain. Generate a tag code and provide a secret.</p>
-            
             <label>Public Code (Auto-generated):</label>
             <input type="text" id="regPublicCode" readonly>
             <button class="btn" onclick="generatePublicCode()" style="background: #334155; margin-bottom: 1.5rem;">Generate New Code</button>
-
             <input type="text" id="regName" placeholder="Item Name (e.g., Blue Backpack)">
             <input type="password" id="regSecretCode" placeholder="Secret Code (Keep private)">
-            
             <button class="btn" onclick="handleRegistration()">Register Item</button>
         </div>
     </section>
@@ -301,15 +117,11 @@
         <div class="card">
             <h2>Report Missing Item</h2>
             <p>Found something? Enter the public code on the tag and drop the location.</p>
-            
             <input type="text" id="foundPublicCode" placeholder="Public Code on Tag">
             <input type="text" id="foundLocation" placeholder="Location Name (e.g., Central Park)">
-            
-            <!-- In a full app, these could be auto-filled by a Google Maps API or Geolocation API -->
             <input type="number" step="0.000001" id="foundLat" placeholder="Latitude (e.g., 40.785091)">
             <input type="number" step="0.000001" id="foundLng" placeholder="Longitude (e.g., -73.968285)">
             <input type="text" id="foundContact" placeholder="Optional Contact (e.g., @finder_handle)">
-            
             <button class="btn" onclick="reportFound()" style="background: var(--secondary);">Report Found</button>
         </div>
     </section>
@@ -319,237 +131,13 @@
         <div class="card">
             <h2>Claim & Reset (Owner)</h2>
             <p>Verify your ownership with your secret code to claim your item and reset the tag for future use.</p>
-            
             <input type="text" id="claimPublicCode" placeholder="Public Code">
             <input type="password" id="claimSecretCode" placeholder="Your Secret Code">
-            
             <button class="btn" onclick="handleClaim()" style="background: #eab308;">Claim & Reset Tag</button>
         </div>
     </section>
 
-    <!-- UI & Provided Smart Contract Logic -->
-    <script>
-        // --- UI Navigation & Mock Database Logic ---
-        
-        function showPage(pageId) {
-            // Hide all sections
-            document.querySelectorAll('.page-section').forEach(sec => {
-                sec.classList.remove('active');
-            });
-            // Show target section
-            document.getElementById(pageId).classList.add('active');
-            
-            // Update nav styles
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.classList.remove('active');
-            });
-            document.getElementById(`nav-${pageId}`).classList.add('active');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Keep track of items locally for the floating UI
-        let localItems = [];
-
-        function updateFloatingPanel() {
-            const list = document.getElementById("items-list");
-            if (localItems.length === 0) {
-                list.innerHTML = '<p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>';
-                return;
-            }
-            
-            list.innerHTML = '';
-            localItems.forEach(item => {
-                list.innerHTML += `
-                    <div class="registered-item">
-                        <strong>${item.name}</strong> (${item.code})<br>
-                        <span class="status-badge" style="background: ${item.status === 'Found' ? '#ef4444' : 'var(--primary)'}">${item.status}</span>
-                    </div>
-                `;
-            });
-        }
-
-        // Wrappers to update the UI after the smart contract call succeeds
-        async function handleRegistration() {
-            await registerItem();
-            // If the alert in registerItem didn't throw an error, update UI
-            const name = document.getElementById("regName").value;
-            const code = document.getElementById("regPublicCode").value;
-            if(name && code && contract) {
-                localItems.push({ name: name, code: code, status: 'Registered' });
-                updateFloatingPanel();
-            }
-        }
-
-        async function handleClaim() {
-            await claimItem();
-            const code = document.getElementById("claimPublicCode").value;
-            if(code && contract) {
-                // Find item and set status back to registered locally
-                let item = localItems.find(i => i.code === code);
-                if(item) item.status = 'Registered';
-                updateFloatingPanel();
-            }
-        }
-
-
-        // --- ORIGINAL INDEX.JS LOGIC PROVIDED BY USER ---
-
-        let provider, signer, contract;
-
-        // Replace with your deployed contract address
-        const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE";
-
-        // Contract ABI matching the LostAndFoundStreamlined smart contract
-        const contractABI = [
-            "function registerItem(string publicCode, string name, bytes32 secretHash) external",
-            "function reportFound(string publicCode, string locationName, uint32 lat, uint32 lng, string contact) external",
-            "function claimItemAndReset(string publicCode, string secretCode) external",
-            "function getItem(string publicCode) external view returns (tuple(bytes32 secretHash, address owner, address finder, uint8 status, uint32 lat, uint32 lng, uint64 registeredAt, uint64 foundAt, string publicCode, string name, string foundLocationName, string finderContact))",
-            "function getOwnerCodes(address owner) external view returns (string[] memory)"
-        ];
-
-        // Automatically generate a random public code (meets 6-32 character requirement)
-        function generatePublicCode() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let result = "TAG-";
-            for (let i = 0; i < 8; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            const regInput = document.getElementById("regPublicCode");
-            if(regInput) regInput.value = result;
-        }
-
-        // 1. Connect Wallet
-        async function connectWallet() {
-            if (window.ethereum) {
-                try {
-                    provider = new ethers.BrowserProvider(window.ethereum);
-                    signer = await provider.getSigner();
-                    contract = new ethers.Contract(contractAddress, contractABI, signer);
-                    
-                    const address = await signer.getAddress();
-                    const walletElement = document.getElementById("walletAddress");
-                    if (walletElement) {
-                        walletElement.innerText = "Wallet: " + address;
-                    }
-                    console.log("Connected to wallet:", address);
-                } catch (err) {
-                    console.error("User denied wallet connection:", err);
-                }
-            } else {
-                alert("Please install MetaMask or another Web3 wallet!");
-            }
-        }
-
-        // 2. Register Item (Local Secret Hashing)
-        async function registerItem() {
-            if (!contract) {
-                alert("Please connect your wallet first!");
-                return;
-            }
-
-            const publicCode = document.getElementById("regPublicCode").value;
-            const name = document.getElementById("regName").value;
-            const secretCode = document.getElementById("regSecretCode").value;
-            
-            if (!publicCode || !name || !secretCode) {
-                alert("Please fill in all registration fields.");
-                return;
-            }
-
-            try {
-                const ownerAddress = await signer.getAddress();
-
-                // Match contract hashing: keccak256(abi.encode(publicCode, secretCode, owner))
-                const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
-                    ["string", "string", "address"],
-                    [publicCode, secretCode, ownerAddress]
-                );
-                const secretHash = ethers.keccak256(encoded);
-
-                const tx = await contract.registerItem(publicCode, name, secretHash);
-                console.log("Transaction sent:", tx.hash);
-                
-                await tx.wait();
-                alert("Item registered successfully! Public Code: " + publicCode);
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + (err.reason || err.message));
-            }
-        }
-
-        // 3. Report Found (GPS Scaling by 1,000,000)
-        async function reportFound() {
-            if (!contract) {
-                alert("Please connect your wallet first!");
-                return;
-            }
-
-            const publicCode = document.getElementById("foundPublicCode").value;
-            const locationName = document.getElementById("foundLocation").value;
-            const latFloat = parseFloat(document.getElementById("foundLat").value);
-            const lngFloat = parseFloat(document.getElementById("foundLng").value);
-            const contact = document.getElementById("foundContact").value || "";
-
-            if (!publicCode || !locationName || isNaN(latFloat) || isNaN(lngFloat)) {
-                alert("Please provide a valid public code, location name, and coordinates.");
-                return;
-            }
-
-            // Scale floats to uint32 integers (preserving 6 decimal places)
-            const lat = Math.round(latFloat * 1000000);
-            const lng = Math.round(lngFloat * 1000000);
-
-            try {
-                const tx = await contract.reportFound(publicCode, locationName, lat, lng, contact);
-                console.log("Transaction sent:", tx.hash);
-
-                await tx.wait();
-                alert("Item reported found!");
-                
-                // Update local UI for finder testing visually
-                let item = localItems.find(i => i.code === publicCode);
-                if(item) {
-                    item.status = 'Found';
-                    updateFloatingPanel();
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + (err.reason || err.message));
-            }
-        }
-
-        // 4. Claim & Reset Tag
-        async function claimItem() {
-            if (!contract) {
-                alert("Please connect your wallet first!");
-                return;
-            }
-
-            const publicCode = document.getElementById("claimPublicCode").value;
-            const secretCode = document.getElementById("claimSecretCode").value;
-
-            if (!publicCode || !secretCode) {
-                alert("Please provide both the public code and your secret code.");
-                return;
-            }
-
-            try {
-                const tx = await contract.claimItemAndReset(publicCode, secretCode);
-                console.log("Transaction sent:", tx.hash);
-
-                await tx.wait();
-                alert("Item claimed successfully and tag reset for future use!");
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + (err.reason || err.message));
-            }
-        }
-    </script>
-
+    <!-- External Script Link -->
     <script src="index.js"></script>
-    
 </body>
 </html>
