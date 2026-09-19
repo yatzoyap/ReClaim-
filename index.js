@@ -45,7 +45,7 @@ function generatePublicCode() {
 let provider, signer, contract;
 
 // TODO: Replace this with your actual deployed ReClaim.sol address from Remix!
-const contractAddress = "0x1234567890abcdef1234567890abcdef12345678";
+const contractAddress = "0xf29614100602bEbc020B752285725Eb5bF4decb7";
 
 // ABI updated to include all functions from ReClaim.sol
 const contractABI = [
