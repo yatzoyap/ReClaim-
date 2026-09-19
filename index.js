@@ -3,7 +3,7 @@
 let provider, signer, contract;
 
 // Replace with your deployed contract address
-const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE";
+const contractAddress = "0x1234567890abcdef1234567890abcdef12345678";
 
 // Contract ABI matching the LostAndFoundStreamlined smart contract
 const contractABI = [
