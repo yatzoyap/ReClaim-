@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim &amp; Reset — ReClaim</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+    <a class="logo" href="index.html"><span class="logo-mark">🔍</span>Re<em>Claim</em></a>
+    <div class="nav-links"><a href="index.html" class="">Home</a><a href="register.html" class="">Register</a><a href="report.html" class="">Report Found</a><a href="claim.html" class="active">Claim</a></div>
+</nav>
+<main class="page-enter" style="max-width:640px">
+    <h1>🔐 Claim &amp; <span class="grad">Reset</span></h1>
+    <p>Met the finder and got your item back? Enter your codes to prove ownership. The item is
+    marked as claimed and the tag resets — ready to protect your stuff again.</p>
+
+    <div class="card">
+        <label for="claimPublicCode">Public Code</label>
+        <input type="text" id="claimPublicCode" placeholder="e.g., TAG-X7K2P9Q4">
+
+        <label for="claimSecretCode">Your Secret Code</label>
+        <input type="password" id="claimSecretCode" placeholder="The secret you saved at registration">
+
+        <button class="btn btn-warn" onclick="handleClaim()" style="margin-top:0.4rem">Claim &amp; Reset Tag ♻️</button>
+    </div>
+
+    <p style="text-align:center; font-size:0.85rem">💡 Tip: you can find your item's public code in the
+    floating dashboard (bottom-right).</p>
+</main>
+<footer>
+    <div class="foot-brand">ReClaim</div>
+    <div>A decentralized Lost &amp; Found, built on <strong>BOT Chain</strong> for Girl Meets Tech — Build Week Hackathon Vol.2</div>
+    <div class="foot-links">
+        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a> ·
+        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">BOT Chain Explorer</a> ·
+        <a href="https://github.com" target="_blank" rel="noopener">GitHub Repo</a>
+    </div>
+    <div style="font-size:0.78rem; opacity:0.7">© 2026 ReClaim · Contracts verified on-chain</div>
+</footer>
+<div id="floating-panel">
+    <h3>Your Items Dashboard</h3>
+    <div id="items-list">
+        <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="index.js"></script>
+<script>
+/* Session bridge — keeps your items visible on every page.
+   Your index.js is untouched; this just saves/restores its localItems array. */
+window.addEventListener('DOMContentLoaded', function () {
+    try {
+        var saved = JSON.parse(localStorage.getItem('reclaim_items') || '[]');
+        if (Array.isArray(saved) && saved.length) {
+            localItems.push.apply(localItems, saved);
+        }
+    } catch (e) {}
+    if (typeof updateFloatingPanel === 'function') updateFloatingPanel();
+});
+var _origUpdatePanel = updateFloatingPanel;
+updateFloatingPanel = function () {
+    try { localStorage.setItem('reclaim_items', JSON.stringify(localItems)); } catch (e) {}
+    _origUpdatePanel();
+};
+/* Ripple effect for all buttons */
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.btn, .action-card');
+    if (!btn) return;
+    var rect = btn.getBoundingClientRect();
+    var d = Math.max(rect.width, rect.height);
+    var s = document.createElement('span');
+    s.className = 'ripple';
+    s.style.width = s.style.height = d + 'px';
+    s.style.left = (e.clientX - rect.left - d / 2) + 'px';
+    s.style.top = (e.clientY - rect.top - d / 2) + 'px';
+    btn.appendChild(s);
+    setTimeout(function () { s.remove(); }, 600);
+});
+</script>
+</body>
+</html>
