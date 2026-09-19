@@ -1,179 +1,404 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lost & Found dApp</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Lost & Found - Girl Meets Tech</title>
+    <!-- Load Ethers.js v6 from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4F46E5',
-                        secondary: '#10B981',
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s;
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4CAF50;
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #particles-bg {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        nav {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        }
-        
-        .dark #particles-bg {
-            background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
+            width: 100%;
+            background: rgba(30, 41, 59, 0.9);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .dark .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
         }
 
-        /* Section Transitions */
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
+
+        /* Floating Panel */
+        #floating-panel {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 300px;
+            z-index: 999;
+            border: 1px solid rgba(108, 99, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        #floating-panel h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .registered-item {
+            background: rgba(255,255,255,0.05);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
         .page-section {
-            display: none;
             opacity: 0;
             transform: translateY(20px);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .page-section.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
+            display: none;
+            padding: 6rem 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            animation: fadeIn var(--transition) forwards;
         }
 
-        /* Satisfying Animated Buttons */
-        .btn-animated {
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Forms & Inputs */
+        .card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 1rem;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: var(--text);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+        }
+
+        /* Buttons & Animations */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
-            z-index: 1;
         }
-        .btn-animated::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: all 0.5s ease;
-            z-index: -1;
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(108, 99, 255, 0.4);
         }
-        .btn-animated:hover::before {
-            left: 100%;
-        }
-        .btn-animated:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5);
-        }
-        .btn-animated:active {
+
+        .btn:active {
             transform: translateY(1px);
         }
 
-        /* Input styling */
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #cbd5e1;
-            background: white;
-            color: #1e293b;
-            transition: all 0.3s;
+        /* Ripple Effect for Satisfying Animation */
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
         }
-        .input-field:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
         }
-        .dark .input-field {
-            background: #0f172a;
-            border-color: #334155;
-            color: #f8fafc;
+
+        @keyframes ripple {
+            0% { transform: scale(0, 0); opacity: 0.5; }
+            100% { transform: scale(100, 100); opacity: 0; }
         }
-        .dark .input-field:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+
+        /* Home Page Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .action-card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .action-card:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.2);
+        }
+
+        h1, h2 { color: var(--primary); margin-bottom: 1rem; }
+        p { color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: var(--primary);
         }
     </style>
 </head>
 <body onload="generatePublicCode()">
 
-    <h1>Lost & Found dApp</h1>
-    
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <p id="walletAddress">Wallet: Not connected</p>
+    <!-- Navigation -->
+    <nav>
+        <h2>ReClaim</h2>
+        <div class="nav-links">
+            <a onclick="showPage('home')" class="active" id="nav-home">Home</a>
+            <a onclick="showPage('register')" id="nav-register">Register</a>
+            <a onclick="showPage('report')" id="nav-report">Report Found</a>
+            <a onclick="showPage('claim')" id="nav-claim">Claim</a>
+        </div>
+    </nav>
 
-    <hr>
+    <!-- Floating Registered Items Panel -->
+    <div id="floating-panel">
+        <h3>Your Items Dashboard</h3>
+        <div id="items-list">
+            <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
+            <!-- Dynamic items will appear here -->
+        </div>
+    </div>
 
-    <!-- 1. Register Item -->
-    <h2>1. Register Item</h2>
-    <label>Public Code (Auto-generated):</label><br>
-    <input type="text" id="regPublicCode" readonly><br>
-    <button onclick="generatePublicCode()">Generate New Code</button><br><br>
+    <!-- 1. Home Page -->
+    <section id="home" class="page-section active">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h1>Vision & Mission</h1>
+            <p>Welcome to ReClaim, built for the <strong>Girl Meets Tech Build Week Hackathon Vol 2</strong>. Our mission is to streamline the recovery of lost physical assets using decentralized web3 technologies. We envision a world where every lost item securely finds its way back to its owner through immutable smart contracts.</p>
+            <p><a href="https://github.com" target="_blank" style="color: var(--secondary);">View our GitHub Repository</a></p>
+            
+            <div class="card" style="margin-top: 3rem;">
+                <h2>Connect Your Wallet</h2>
+                <p>Start your journey by authenticating your Web3 wallet to interact with the ReClaim smart contract.</p>
+                <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+                <p id="walletAddress" style="margin-top: 1rem; font-weight: bold; color: var(--secondary);">Wallet: Not connected</p>
+            </div>
 
-    <input type="text" id="regName" placeholder="Item Name (e.g., Blue Backpack)"><br><br>
-    <input type="text" id="regSecretCode" placeholder="Secret Code (Keep private)"><br><br>
-    <button onclick="registerItem()">Register Item</button>
+            <div class="action-grid">
+                <div class="action-card" onclick="showPage('register')">
+                    <h3 style="margin-bottom: 1rem;">Register Item</h3>
+                    <button class="btn">Go to Registry</button>
+                </div>
+                <div class="action-card" onclick="showPage('report')">
+                    <h3 style="margin-bottom: 1rem;">Report Found</h3>
+                    <button class="btn" style="background: var(--secondary);">Report an Item</button>
+                </div>
+                <div class="action-card" onclick="showPage('claim')">
+                    <h3 style="margin-bottom: 1rem;">Claim & Reset</h3>
+                    <button class="btn" style="background: #eab308;">Claim Item</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <hr>
+    <!-- 2. Register Page -->
+    <section id="register" class="page-section">
+        <div class="card">
+            <h2>Register New Item</h2>
+            <p>Secure your asset on the blockchain. Generate a tag code and provide a secret.</p>
+            
+            <label>Public Code (Auto-generated):</label>
+            <input type="text" id="regPublicCode" readonly>
+            <button class="btn" onclick="generatePublicCode()" style="background: #334155; margin-bottom: 1.5rem;">Generate New Code</button>
 
-    <!-- 2. Report Found -->
-    <h2>2. Report Item Found</h2>
-    <input type="text" id="foundPublicCode" placeholder="Public Code"><br><br>
-    <input type="text" id="foundLocation" placeholder="Location Name (e.g., Central Park)"><br><br>
-    <input type="text" id="foundLat" placeholder="Latitude (e.g., 40.785091)"><br><br>
-    <input type="text" id="foundLng" placeholder="Longitude (e.g., -73.968285)"><br><br>
-    <input type="text" id="foundContact" placeholder="Optional Contact (e.g., @finder)"><br><br>
-    <button onclick="reportFound()">Report Found</button>
+            <input type="text" id="regName" placeholder="Item Name (e.g., Blue Backpack)">
+            <input type="password" id="regSecretCode" placeholder="Secret Code (Keep private)">
+            
+            <button class="btn" onclick="handleRegistration()">Register Item</button>
+        </div>
+    </section>
 
-    <hr>
+    <!-- 3. Report Found Page -->
+    <section id="report" class="page-section">
+        <div class="card">
+            <h2>Report Missing Item</h2>
+            <p>Found something? Enter the public code on the tag and drop the location.</p>
+            
+            <input type="text" id="foundPublicCode" placeholder="Public Code on Tag">
+            <input type="text" id="foundLocation" placeholder="Location Name (e.g., Central Park)">
+            
+            <!-- In a full app, these could be auto-filled by a Google Maps API or Geolocation API -->
+            <input type="number" step="0.000001" id="foundLat" placeholder="Latitude (e.g., 40.785091)">
+            <input type="number" step="0.000001" id="foundLng" placeholder="Longitude (e.g., -73.968285)">
+            <input type="text" id="foundContact" placeholder="Optional Contact (e.g., @finder_handle)">
+            
+            <button class="btn" onclick="reportFound()" style="background: var(--secondary);">Report Found</button>
+        </div>
+    </section>
 
-    <!-- 3. Claim & Reset -->
-    <h2>3. Claim & Reset (Owner)</h2>
-    <input type="text" id="claimPublicCode" placeholder="Public Code"><br><br>
-    <input type="text" id="claimSecretCode" placeholder="Your Secret Code"><br><br>
-    <button onclick="claimItem()">Claim & Reset Tag</button>
+    <!-- 4. Claim & Reset Page -->
+    <section id="claim" class="page-section">
+        <div class="card">
+            <h2>Claim & Reset (Owner)</h2>
+            <p>Verify your ownership with your secret code to claim your item and reset the tag for future use.</p>
+            
+            <input type="text" id="claimPublicCode" placeholder="Public Code">
+            <input type="password" id="claimSecretCode" placeholder="Your Secret Code">
+            
+            <button class="btn" onclick="handleClaim()" style="background: #eab308;">Claim & Reset Tag</button>
+        </div>
+    </section>
 
-    <!-- JavaScript Logic -->
+    <!-- UI & Provided Smart Contract Logic -->
     <script>
+        // --- UI Navigation & Mock Database Logic ---
+        
+        function showPage(pageId) {
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            // Show target section
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav styles
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.getElementById(`nav-${pageId}`).classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Keep track of items locally for the floating UI
+        let localItems = [];
+
+        function updateFloatingPanel() {
+            const list = document.getElementById("items-list");
+            if (localItems.length === 0) {
+                list.innerHTML = '<p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            localItems.forEach(item => {
+                list.innerHTML += `
+                    <div class="registered-item">
+                        <strong>${item.name}</strong> (${item.code})<br>
+                        <span class="status-badge" style="background: ${item.status === 'Found' ? '#ef4444' : 'var(--primary)'}">${item.status}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Wrappers to update the UI after the smart contract call succeeds
+        async function handleRegistration() {
+            await registerItem();
+            // If the alert in registerItem didn't throw an error, update UI
+            const name = document.getElementById("regName").value;
+            const code = document.getElementById("regPublicCode").value;
+            if(name && code && contract) {
+                localItems.push({ name: name, code: code, status: 'Registered' });
+                updateFloatingPanel();
+            }
+        }
+
+        async function handleClaim() {
+            await claimItem();
+            const code = document.getElementById("claimPublicCode").value;
+            if(code && contract) {
+                // Find item and set status back to registered locally
+                let item = localItems.find(i => i.code === code);
+                if(item) item.status = 'Registered';
+                updateFloatingPanel();
+            }
+        }
+
+
+        // --- ORIGINAL INDEX.JS LOGIC PROVIDED BY USER ---
+
         let provider, signer, contract;
 
         // Replace with your deployed contract address
-        const contractAddress = "0xf29614100602bEbc020B752285725Eb5bF4decb7";
+        const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE";
 
         // Contract ABI matching the LostAndFoundStreamlined smart contract
         const contractABI = [
@@ -184,17 +409,18 @@
             "function getOwnerCodes(address owner) external view returns (string[] memory)"
         ];
 
-        // Helper to generate random strings
-        function generateRandomString(length) {
+        // Automatically generate a random public code (meets 6-32 character requirement)
+        function generatePublicCode() {
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let result = "";
-            for (let i = 0; i < length; i++) {
+            let result = "TAG-";
+            for (let i = 0; i < 8; i++) {
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            return result;
+            const regInput = document.getElementById("regPublicCode");
+            if(regInput) regInput.value = result;
         }
 
-        // 1. Connect Wallet & Automatically Load Owner Items
+        // 1. Connect Wallet
         async function connectWallet() {
             if (window.ethereum) {
                 try {
@@ -203,7 +429,10 @@
                     contract = new ethers.Contract(contractAddress, contractABI, signer);
                     
                     const address = await signer.getAddress();
-                    document.getElementById("walletAddress").innerText = "Wallet: " + address;
+                    const walletElement = document.getElementById("walletAddress");
+                    if (walletElement) {
+                        walletElement.innerText = "Wallet: " + address;
+                    }
                     console.log("Connected to wallet:", address);
                 } catch (err) {
                     console.error("User denied wallet connection:", err);
@@ -213,52 +442,21 @@
             }
         }
 
-        // Load items belonging to the connected wallet
-        async function loadOwnerItems() {
-            if (!contract) return;
-            try {
-                const address = await signer.getAddress();
-                const codes = await contract.getOwnerCodes(address);
-                const listElement = document.getElementById("ownerItemsList");
-                listElement.innerHTML = "";
-
-                if (codes.length === 0) {
-                    listElement.innerHTML = "<li>No items registered yet.</li>";
-                    return;
-                }
-
-                for (let code of codes) {
-                    const item = await contract.getItem(code);
-                    const statusText = item.status === 0n ? "Registered (Safe)" : "Found 🚨";
-                    
-                    let itemDetails = `<li><b>${item.name}</b> | Public Code: <code>${code}</code> | Status: ${statusText}`;
-                    if (item.status === 1n) {
-                        itemDetails += `<br>&nbsp;&nbsp;📍 Location: ${item.foundLocationName} (Lat: ${Number(item.lat)/1000000}, Lng: ${Number(item.lng)/1000000})`;
-                    }
-                    itemDetails += `</li><br>`;
-                    listElement.innerHTML += itemDetails;
-                }
-            } catch (err) {
-                console.error("Error loading items:", err);
-            }
-        }
-
-        // 2. Register Item (Auto-generates Public & Secret Codes)
+        // 2. Register Item (Local Secret Hashing)
         async function registerItem() {
             if (!contract) {
                 alert("Please connect your wallet first!");
                 return;
             }
 
+            const publicCode = document.getElementById("regPublicCode").value;
             const name = document.getElementById("regName").value;
-            if (!name) {
-                alert("Please enter an item name.");
+            const secretCode = document.getElementById("regSecretCode").value;
+            
+            if (!publicCode || !name || !secretCode) {
+                alert("Please fill in all registration fields.");
                 return;
             }
-
-            // Automatically generate codes
-            const publicCode = "TAG-" + generateRandomString(8); // e.g. TAG-A9B2X4Y1
-            const secretCode = "sec_" + generateRandomString(12); // e.g. sec_K3M9P2L5
 
             try {
                 const ownerAddress = await signer.getAddress();
@@ -271,13 +469,12 @@
                 const secretHash = ethers.keccak256(encoded);
 
                 const tx = await contract.registerItem(publicCode, name, secretHash);
-                document.getElementById("regResult").innerText = "Transaction pending...";
+                console.log("Transaction sent:", tx.hash);
                 
                 await tx.wait();
                 alert("Item registered successfully! Public Code: " + publicCode);
             } catch (err) {
                 console.error(err);
-                document.getElementById("regResult").innerText = "";
                 alert("Error: " + (err.reason || err.message));
             }
         }
@@ -300,13 +497,24 @@
                 return;
             }
 
+            // Scale floats to uint32 integers (preserving 6 decimal places)
             const lat = Math.round(latFloat * 1000000);
             const lng = Math.round(lngFloat * 1000000);
 
             try {
                 const tx = await contract.reportFound(publicCode, locationName, lat, lng, contact);
+                console.log("Transaction sent:", tx.hash);
+
                 await tx.wait();
                 alert("Item reported found!");
+                
+                // Update local UI for finder testing visually
+                let item = localItems.find(i => i.code === publicCode);
+                if(item) {
+                    item.status = 'Found';
+                    updateFloatingPanel();
+                }
+
             } catch (err) {
                 console.error(err);
                 alert("Error: " + (err.reason || err.message));
@@ -330,9 +538,10 @@
 
             try {
                 const tx = await contract.claimItemAndReset(publicCode, secretCode);
+                console.log("Transaction sent:", tx.hash);
+
                 await tx.wait();
                 alert("Item claimed successfully and tag reset for future use!");
-                loadOwnerItems();
             } catch (err) {
                 console.error(err);
                 alert("Error: " + (err.reason || err.message));
