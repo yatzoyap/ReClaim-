@@ -26,26 +26,25 @@
 <main class="narrow">
     <h1>Report a found item</h1>
     <p class="lede">Enter the public code on the tag and mark where you found it. The owner is notified on-chain.</p>
-
+ 
     <div class="card">
         <label for="foundPublicCode">Public code on the tag</label>
         <input type="text" id="foundPublicCode" placeholder="TAG-X7K2P9Q4">
-
-        <label>Where did you find it? Click the map to drop a pin</label>
-        <div id="map"></div>
-        <p class="hint">The pin fills in the coordinates and location name. You can still edit them.</p>
-
-        <label for="foundLocation">Location name</label>
-        <input type="text" id="foundLocation" placeholder="Central Park, near the fountain" maxlength="100">
-
-        <div class="two-col">
-            <div><label for="foundLat">Latitude</label><input type="number" step="0.000001" id="foundLat" placeholder="40.785091"></div>
-            <div><label for="foundLng">Longitude</label><input type="number" step="0.000001" id="foundLng" placeholder="-73.968285"></div>
+ 
+        <label for="foundLocation">Where did you find it?</label>
+        <div class="search-row">
+            <input type="text" id="foundLocation" placeholder="Central Park, New York" maxlength="100" autocomplete="off">
+            <button class="btn btn-secondary btn-auto" type="button" id="findBtn">Find on map</button>
         </div>
-
+        <p class="hint" id="mapHint">Type a place and press Find on map, or click the map to drop a pin.</p>
+        <div id="map" style="margin-top:0.8rem"></div>
+ 
+        <input type="hidden" id="foundLat">
+        <input type="hidden" id="foundLng">
+ 
         <label for="foundContact">Your contact (optional)</label>
         <input type="text" id="foundContact" placeholder="Telegram @you" maxlength="80">
-
+ 
         <div class="stack"><button class="btn" id="reportBtn" onclick="reportFound()">Report found</button></div>
     </div>
 </main>
@@ -64,28 +63,75 @@
 </aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script src="index.js"></script>
+<style>
+    .search-row { display: flex; gap: 0.6rem; }
+    .search-row input { flex: 1; min-width: 0; }
+    .search-row .btn { white-space: nowrap; padding: 12px 18px; }
+</style>
 <script>
 window.addEventListener('DOMContentLoaded', function () {
     var map = L.map('map').setView([10, 20], 2);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-
+ 
     var marker = null;
-    function setPin(lat, lng) {
+    var nameInput = document.getElementById('foundLocation');
+    var hint = document.getElementById('mapHint');
+    var findBtn = document.getElementById('findBtn');
+    var autoName = true; // true while the name was filled by the map, not typed by the user
+ 
+    nameInput.addEventListener('input', function () { autoName = false; });
+ 
+    function setPin(lat, lng, zoom) {
         if (marker) map.removeLayer(marker);
         marker = L.marker([lat, lng]).addTo(map);
         document.getElementById('foundLat').value = lat.toFixed(6);
         document.getElementById('foundLng').value = lng.toFixed(6);
-        map.setView([lat, lng], Math.max(map.getZoom(), 14));
-        fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng)
+        map.setView([lat, lng], zoom || Math.max(map.getZoom(), 15));
+    }
+ 
+    function shortName(display) {
+        return display.split(',').slice(0, 2).join(',').trim().slice(0, 100);
+    }
+ 
+    // Type a place -> find it on the map
+    function findOnMap() {
+        var q = nameInput.value.trim();
+        if (!q) { toast('Type a location first.', 'error'); return; }
+        findBtn.disabled = true; findBtn.textContent = 'Searching…';
+        fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(q))
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (!res || !res.length) {
+                    toast('Could not find that place. Try adding a city or country, or click the map.', 'error');
+                    return;
+                }
+                setPin(parseFloat(res[0].lat), parseFloat(res[0].lon), 16);
+                hint.textContent = 'Pinned: ' + res[0].display_name + '. Not right? Click the map to move the pin.';
+            })
+            .catch(function () { toast('Search failed. Check your connection or click the map instead.', 'error'); })
+            .then(function () { findBtn.disabled = false; findBtn.textContent = 'Find on map'; });
+    }
+    findBtn.addEventListener('click', findOnMap);
+    nameInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); findOnMap(); }
+    });
+ 
+    // Click the map -> drop a pin and fill in the place name
+    map.on('click', function (e) {
+        setPin(e.latlng.lat, e.latlng.lng);
+        hint.textContent = 'Pin dropped.';
+        fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng)
             .then(function (r) { return r.json(); })
             .then(function (d) {
-                var el = document.getElementById('foundLocation');
-                if (d && d.display_name && !el.value) el.value = d.display_name.split(',').slice(0, 2).join(',');
+                if (d && d.display_name && (!nameInput.value || autoName)) {
+                    nameInput.value = shortName(d.display_name);
+                    autoName = true;
+                }
             })
             .catch(function () {});
-    }
-    map.on('click', function (e) { setPin(e.latlng.lat, e.latlng.lng); });
-
+    });
+ 
+    // Use-my-location button
     var locate = L.control({ position: 'topright' });
     locate.onAdd = function () {
         var div = L.DomUtil.create('div', 'leaflet-bar');
@@ -94,14 +140,25 @@ window.addEventListener('DOMContentLoaded', function () {
             ev.preventDefault();
             if (!navigator.geolocation) return toast('Geolocation is not available in this browser.', 'error');
             navigator.geolocation.getCurrentPosition(
-                function (pos) { setPin(pos.coords.latitude, pos.coords.longitude); },
-                function () { toast('Could not get your location. Click the map instead.', 'error'); }
+                function (pos) { map.fire('click', { latlng: L.latLng(pos.coords.latitude, pos.coords.longitude) }); },
+                function () { toast('Could not get your location. Search or click the map instead.', 'error'); }
             );
         };
         return div;
     };
     locate.addTo(map);
+ 
+    // Require a pin before reporting (coordinates come from the pin)
+    var originalReport = window.reportFound;
+    window.reportFound = function () {
+        if (!document.getElementById('foundLat').value || !document.getElementById('foundLng').value) {
+            toast('Press Find on map (or click the map) to pin the location first.', 'error');
+            return;
+        }
+        return originalReport.apply(this, arguments);
+    };
 });
 </script>
 </body>
 </html>
+ 
