@@ -3,122 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReClaim — Lost &amp; Found, On-Chain | Girl Meets Tech Hackathon</title>
+    <title>ReClaim — Lost & found, on-chain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body onload="generatePublicCode()">
+<body>
 <nav>
-    <a class="logo" href="index.html"><span class="logo-mark">🔍</span>Re<em>Claim</em></a>
-    <div class="nav-links"><a href="index.html" class="active">Home</a><a href="register.html" class="">Register</a><a href="report.html" class="">Report Found</a><a href="claim.html" class="">Claim</a></div>
+    <a class="logo" href="index.html"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#fff"/><stop offset=".55" stop-color="#8b8f98"/><stop offset="1" stop-color="#d8dbe0"/></linearGradient></defs><circle cx="10.5" cy="10.5" r="6.5" stroke="url(#g)" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="url(#g)" stroke-width="2.2" stroke-linecap="round"/></svg>ReClaim</a>
+    <div class="nav-links"><a href="index.html" class="active">Home</a><a href="register.html">Register</a><a href="report.html">Report found</a><a href="claim.html">Claim</a></div>
+    <div class="nav-right">
+        <select id="networkSelect" class="net-select" aria-label="Network" onchange="changeNetwork(this.value)">
+            <option value="968">BOT Testnet</option>
+            <option value="677">BOT Mainnet</option>
+        </select>
+        <button class="wallet-btn js-connect" onclick="connectWallet()">Connect wallet</button>
+    </div>
 </nav>
-<main class="page-enter">
+<main>
     <section class="hero">
-        <div class="badges-row">
-            <span class="chip">⚡ BOT Chain</span>
-            <span class="chip">🛠️ Build Week Hackathon Vol.2</span>
-            <span class="chip">🌐 Web3 dApp</span>
+        <h1>Lost it? Get it back.</h1>
+        <p class="lede">Register your valuables on a smart contract. Finders report them with a location, and you claim them back with a secret only you know. No middlemen, no paperwork.</p>
+        <div class="hero-actions">
+            <button class="btn js-connect" onclick="connectWallet()">Connect wallet</button>
+            <a class="btn btn-secondary" href="register.html">Register an item</a>
         </div>
-        <h1 style="margin-top:1.2rem">Lost it? <span class="grad">ReClaim</span> it.</h1>
-        <p class="tagline">A decentralized Lost &amp; Found — register your valuables on an immutable
-        smart contract, finders report them with GPS, and you claim them back with a secret code.
-        No middlemen. No lost paperwork. Just proof, on-chain.</p>
+        <p class="hint" id="walletAddress" style="margin-top:1rem;word-break:break-all"></p>
     </section>
 
-    <div class="vm-grid">
-        <div class="card vm-card">
-            <div class="vm-icon">🎯</div>
-            <h2>Our Vision</h2>
-            <p>A world where every lost item securely finds its way home. By anchoring ownership
-            and recovery to the blockchain, we make losing things recoverable — permanently and
-            trustlessly.</p>
+    <section class="two-up">
+        <div>
+            <h2>Vision</h2>
+            <p>A world where every lost item finds its way home. Anchoring ownership and recovery on the blockchain makes losing things recoverable, permanently and without trust.</p>
         </div>
-        <div class="card vm-card">
-            <div class="vm-icon">🚀</div>
-            <h2>Our Mission</h2>
-            <p>To streamline the recovery of lost physical assets using decentralized Web3
-            technology — one smart contract on BOT Chain that anyone, anywhere can use to tag,
-            find, and reclaim what matters to them.</p>
+        <div>
+            <h2>Mission</h2>
+            <p>Streamline recovery of lost physical assets with one smart contract on BOT Chain that anyone can use to tag, find and reclaim what matters to them.</p>
         </div>
-    </div>
+    </section>
 
-    <div class="card" style="max-width:560px; margin:0 auto; text-align:center">
-        <h2>🔗 Connect Your Wallet</h2>
-        <p>Authenticate with MetaMask to start interacting with the ReClaim smart contract.
-        Every registration, report and claim happens through your wallet.</p>
-        <button class="btn" onclick="connectWallet()">Connect MetaMask</button>
-        <p id="walletAddress" class="wallet-line" style="margin-top:1rem">Wallet: Not connected</p>
-    </div>
-
-    <div class="action-grid">
-        <a class="action-card" href="register.html">
-            <div class="ac-icon">🏷️</div>
-            <h3>Register Item</h3>
-            <p>Tag your valuables with a public + secret code pair, stored on-chain forever.</p>
-            <button class="btn">Go to Registry →</button>
+    <section class="steps">
+        <a class="step" href="register.html">
+            <div><h2>Register an item</h2><p>Tag your valuables with a public code and a private secret, stored on-chain.</p></div>
+            <span class="arrow">→</span>
         </a>
-        <a class="action-card" href="report.html">
-            <div class="ac-icon">📍</div>
-            <h3>Report Found</h3>
-            <p>Found a tagged item? Pin its location on the map and notify the owner instantly.</p>
-            <button class="btn btn-success">Report an Item →</button>
+        <a class="step" href="report.html">
+            <div><h2>Report a found item</h2><p>Found a tagged item? Pin its location on the map and notify the owner.</p></div>
+            <span class="arrow">→</span>
         </a>
-        <a class="action-card" href="claim.html">
-            <div class="ac-icon">🔐</div>
-            <h3>Claim &amp; Reset</h3>
-            <p>Got your item back? Verify with your secret code and reactivate the tag.</p>
-            <button class="btn btn-warn">Claim Item →</button>
+        <a class="step" href="claim.html">
+            <div><h2>Claim and reset</h2><p>Got it back? Prove ownership with your secret and reactivate the tag.</p></div>
+            <span class="arrow">→</span>
         </a>
-    </div>
+    </section>
 </main>
 <footer>
     <div class="foot-brand">ReClaim</div>
-    <div>A decentralized Lost &amp; Found, built on <strong>BOT Chain</strong> for Girl Meets Tech — Build Week Hackathon Vol.2</div>
+    <div>A decentralized lost &amp; found on BOT Chain. Built for Girl Meets Tech Build Week Hackathon Vol.2.</div>
     <div class="foot-links">
-        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a> ·
-        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">BOT Chain Explorer</a> ·
-        <a href="https://github.com" target="_blank" rel="noopener">GitHub Repo</a>
+        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a>
+        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">Explorer</a>
+        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
     </div>
-    <div style="font-size:0.78rem; opacity:0.7">© 2026 ReClaim · Contracts verified on-chain</div>
 </footer>
-<div id="floating-panel">
-    <h3>Your Items Dashboard</h3>
-    <div id="items-list">
-        <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
-    </div>
-</div>
+<aside id="panel" class="panel">
+    <button class="panel-head" onclick="togglePanel()"><span>Your items</span><span class="count" id="itemCount"></span></button>
+    <div class="panel-body" id="items-list"></div>
+</aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script src="index.js"></script>
-<script>
-/* Session bridge — keeps your items visible on every page.
-   Your index.js is untouched; this just saves/restores its localItems array. */
-window.addEventListener('DOMContentLoaded', function () {
-    try {
-        var saved = JSON.parse(localStorage.getItem('reclaim_items') || '[]');
-        if (Array.isArray(saved) && saved.length) {
-            localItems.push.apply(localItems, saved);
-        }
-    } catch (e) {}
-    if (typeof updateFloatingPanel === 'function') updateFloatingPanel();
-});
-var _origUpdatePanel = updateFloatingPanel;
-updateFloatingPanel = function () {
-    try { localStorage.setItem('reclaim_items', JSON.stringify(localItems)); } catch (e) {}
-    _origUpdatePanel();
-};
-/* Ripple effect for all buttons */
-document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.btn, .action-card');
-    if (!btn) return;
-    var rect = btn.getBoundingClientRect();
-    var d = Math.max(rect.width, rect.height);
-    var s = document.createElement('span');
-    s.className = 'ripple';
-    s.style.width = s.style.height = d + 'px';
-    s.style.left = (e.clientX - rect.left - d / 2) + 'px';
-    s.style.top = (e.clientY - rect.top - d / 2) + 'px';
-    btn.appendChild(s);
-    setTimeout(function () { s.remove(); }, 600);
-});
-</script>
 </body>
 </html>

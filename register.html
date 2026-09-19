@@ -3,89 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Item — ReClaim</title>
+    <title>Register an item — ReClaim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body onload="generatePublicCode()">
+<body>
 <nav>
-    <a class="logo" href="index.html"><span class="logo-mark">🔍</span>Re<em>Claim</em></a>
-    <div class="nav-links"><a href="index.html" class="">Home</a><a href="register.html" class="active">Register</a><a href="report.html" class="">Report Found</a><a href="claim.html" class="">Claim</a></div>
+    <a class="logo" href="index.html"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="24" y2="24"><stop stop-color="#fff"/><stop offset=".55" stop-color="#8b8f98"/><stop offset="1" stop-color="#d8dbe0"/></linearGradient></defs><circle cx="10.5" cy="10.5" r="6.5" stroke="url(#g)" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="url(#g)" stroke-width="2.2" stroke-linecap="round"/></svg>ReClaim</a>
+    <div class="nav-links"><a href="index.html">Home</a><a href="register.html" class="active">Register</a><a href="report.html">Report found</a><a href="claim.html">Claim</a></div>
+    <div class="nav-right">
+        <select id="networkSelect" class="net-select" aria-label="Network" onchange="changeNetwork(this.value)">
+            <option value="968">BOT Testnet</option>
+            <option value="677">BOT Mainnet</option>
+        </select>
+        <button class="wallet-btn js-connect" onclick="connectWallet()">Connect wallet</button>
+    </div>
 </nav>
-<main class="page-enter" style="max-width:640px">
-    <h1>🏷️ Register a <span class="grad">New Item</span></h1>
-    <p>Secure your asset on the blockchain. The <strong>public code</strong> goes on the tag anyone can
-    see; the <strong>secret code</strong> is yours alone — you'll need it to claim the item later.</p>
+<main class="narrow">
+    <h1>Register an item</h1>
+    <p class="lede">The <strong>public code</strong> goes on the tag for anyone to see. The <strong>secret code</strong> is yours alone and is needed to claim the item later.</p>
 
     <div class="card">
-        <h2>Public Code (auto-generated)</h2>
-        <div class="code-display">
-            <input type="text" id="regPublicCode" readonly>
+        <label for="regPublicCode">Public code</label>
+        <div class="code-display"><input type="text" id="regPublicCode" readonly></div>
+        <button class="btn btn-secondary" type="button" onclick="generatePublicCode()">Generate new code</button>
+
+        <label for="regName">Item name</label>
+        <input type="text" id="regName" placeholder="Blue backpack" maxlength="60">
+
+        <label for="regSecretCode">Secret code</label>
+        <div class="field-wrap">
+            <input type="password" id="regSecretCode" placeholder="Only you should know this" maxlength="60" autocomplete="off">
+            <button type="button" class="field-toggle" id="toggleSecretBtn" onclick="toggleSecret()">Show</button>
         </div>
-        <button class="btn btn-secondary" onclick="generatePublicCode()">🎲 Generate New Code</button>
+        <p class="hint">Stored on-chain only as a hash and shown to you once after registering. It can never be recovered.</p>
 
-        <label for="regName">Item Name</label>
-        <input type="text" id="regName" placeholder="e.g., Blue Backpack" maxlength="60">
-
-        <label for="regSecretCode">Secret Code (keep it private!)</label>
-        <input type="password" id="regSecretCode" placeholder="Only you should know this" maxlength="60">
-        <p style="font-size:0.82rem">⚠️ The secret is stored on-chain only as a hash — it can
-        <strong>never</strong> be recovered. Write it down somewhere safe.</p>
-
-        <button class="btn" onclick="handleRegistration()" style="margin-top:0.5rem">Register Item ⛓️</button>
+        <div class="stack"><button class="btn" id="registerBtn" onclick="handleRegistration()">Register item</button></div>
     </div>
 
-    <p style="text-align:center; font-size:0.85rem">💡 Your registered items appear in the floating
-    dashboard (bottom-right) on every page — status updates automatically after each transaction confirms.</p>
+    <div class="card receipt" id="receipt" hidden></div>
 </main>
 <footer>
     <div class="foot-brand">ReClaim</div>
-    <div>A decentralized Lost &amp; Found, built on <strong>BOT Chain</strong> for Girl Meets Tech — Build Week Hackathon Vol.2</div>
+    <div>A decentralized lost &amp; found on BOT Chain. Built for Girl Meets Tech Build Week Hackathon Vol.2.</div>
     <div class="foot-links">
-        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a> ·
-        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">BOT Chain Explorer</a> ·
-        <a href="https://github.com" target="_blank" rel="noopener">GitHub Repo</a>
+        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a>
+        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">Explorer</a>
+        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
     </div>
-    <div style="font-size:0.78rem; opacity:0.7">© 2026 ReClaim · Contracts verified on-chain</div>
 </footer>
-<div id="floating-panel">
-    <h3>Your Items Dashboard</h3>
-    <div id="items-list">
-        <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
-    </div>
-</div>
+<aside id="panel" class="panel">
+    <button class="panel-head" onclick="togglePanel()"><span>Your items</span><span class="count" id="itemCount"></span></button>
+    <div class="panel-body" id="items-list"></div>
+</aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script src="index.js"></script>
-<script>
-/* Session bridge — keeps your items visible on every page.
-   Your index.js is untouched; this just saves/restores its localItems array. */
-window.addEventListener('DOMContentLoaded', function () {
-    try {
-        var saved = JSON.parse(localStorage.getItem('reclaim_items') || '[]');
-        if (Array.isArray(saved) && saved.length) {
-            localItems.push.apply(localItems, saved);
-        }
-    } catch (e) {}
-    if (typeof updateFloatingPanel === 'function') updateFloatingPanel();
-});
-var _origUpdatePanel = updateFloatingPanel;
-updateFloatingPanel = function () {
-    try { localStorage.setItem('reclaim_items', JSON.stringify(localItems)); } catch (e) {}
-    _origUpdatePanel();
-};
-/* Ripple effect for all buttons */
-document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.btn, .action-card');
-    if (!btn) return;
-    var rect = btn.getBoundingClientRect();
-    var d = Math.max(rect.width, rect.height);
-    var s = document.createElement('span');
-    s.className = 'ripple';
-    s.style.width = s.style.height = d + 'px';
-    s.style.left = (e.clientX - rect.left - d / 2) + 'px';
-    s.style.top = (e.clientY - rect.top - d / 2) + 'px';
-    btn.appendChild(s);
-    setTimeout(function () { s.remove(); }, 600);
-});
-</script>
 </body>
 </html>
