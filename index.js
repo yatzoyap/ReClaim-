@@ -1,11 +1,3 @@
-// ReClaim — frontend logic (shared by every page)
-
-// ---------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------
-// Official BOT Chain network details: https://dev-docs.botchain.ai/docs/Developers/quick-guide/
-// Put the address you deployed ReClaim.sol to on each network. A contract only exists
-// on the network you deployed it to, so leave "" for a network you haven't deployed on.
 const NETWORKS = {
     968: {
         label: "BOT Testnet",
@@ -31,14 +23,14 @@ const NETWORKS = {
     }
 };
 const FAUCET_URL = "https://faucet.botchain.ai/basic";
-
+ 
 // Which network the site talks to (remembered between pages).
 let targetChainId = 968;
 try {
     const saved = Number(localStorage.getItem("reclaim_chain"));
     if (NETWORKS[saved]) targetChainId = saved;
 } catch (e) {}
-
+ 
 const CONTRACT_ABI = [
     "function registerItem(string publicCode, string name, bytes32 secretHash) external",
     "function reportFound(string publicCode, string locationName, uint32 lat, uint32 lng, string contact) external",
@@ -58,7 +50,7 @@ const CONTRACT_ABI = [
     "error WrongSecretCode()",
     "error InvalidStatus()"
 ];
-
+ 
 const ERROR_MESSAGES = {
     UnknownCode: "That public code isn't registered.",
     CodeLengthInvalid: "The public code must be 6 to 32 characters.",
@@ -72,16 +64,16 @@ const ERROR_MESSAGES = {
     WrongSecretCode: "Wrong secret code.",
     InvalidStatus: "This item hasn't been reported found yet."
 };
-
+ 
 // ---------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------
 let provider, signer, contract, account;
-
+ 
 const $ = (id) => document.getElementById(id);
 const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
+ 
 function toast(message, type = "info", ms = 5000) {
     let box = $("toasts");
     if (!box) {
@@ -95,7 +87,7 @@ function toast(message, type = "info", ms = 5000) {
     box.appendChild(el);
     setTimeout(() => el.remove(), ms);
 }
-
+ 
 function friendlyError(err) {
     if (err && (err.code === "ACTION_REJECTED" || err.code === 4001)) return "You cancelled the request in your wallet.";
     if (err && err.code === -32002) return "A MetaMask request is already open. Open the MetaMask window and approve it.";
@@ -104,7 +96,7 @@ function friendlyError(err) {
     if (name && ERROR_MESSAGES[name]) return ERROR_MESSAGES[name];
     return (err && (err.shortMessage || err.reason || err.message)) || "Something went wrong.";
 }
-
+ 
 async function withBusy(buttonId, busyLabel, task) {
     const btn = $(buttonId);
     const original = btn ? btn.innerHTML : "";
@@ -118,7 +110,7 @@ async function withBusy(buttonId, busyLabel, task) {
         if (btn) { btn.disabled = false; btn.innerHTML = original; }
     }
 }
-
+ 
 // ---------------------------------------------------------------
 // Wallet
 // ---------------------------------------------------------------
@@ -139,20 +131,20 @@ function updateWalletUI() {
     const sel = $("networkSelect");
     if (sel) sel.value = String(targetChainId);
 }
-
+ 
 function setTarget(chainId) {
     targetChainId = chainId;
     try { localStorage.setItem("reclaim_chain", String(chainId)); } catch (e) {}
     updateWalletUI();
 }
-
+ 
 // Called by the network dropdown in the nav.
 function changeNetwork(value) {
     setTarget(Number(value));
     contract = null;
     if (account) setupWallet(true);
 }
-
+ 
 // Switch MetaMask to the selected network, adding it first if MetaMask doesn't know it yet.
 async function ensureNetwork() {
     const net = NETWORKS[targetChainId];
@@ -169,7 +161,7 @@ async function ensureNetwork() {
         }
     }
 }
-
+ 
 // requestAccess=true opens MetaMask popups (connect + network switch); false only reconnects silently.
 async function setupWallet(requestAccess) {
     if (!window.ethereum) {
@@ -182,7 +174,7 @@ async function setupWallet(requestAccess) {
         );
         return false;
     }
-
+ 
     try {
         if (requestAccess) {
             await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -191,11 +183,11 @@ async function setupWallet(requestAccess) {
             const accounts = await window.ethereum.request({ method: "eth_accounts" });
             if (!accounts.length) return false;
         }
-
+ 
         // A fresh provider after any network switch (ethers caches the network).
         provider = new ethers.BrowserProvider(window.ethereum);
         const chainId = Number((await provider.getNetwork()).chainId);
-
+ 
         if (!NETWORKS[chainId]) {
             contract = signer = account = null;
             updateWalletUI();
@@ -204,10 +196,10 @@ async function setupWallet(requestAccess) {
             return false;
         }
         if (chainId !== targetChainId) setTarget(chainId); // follow the wallet
-
+ 
         signer = await provider.getSigner();
         account = await signer.getAddress();
-
+ 
         const net = NETWORKS[chainId];
         const code = net.contract ? await provider.getCode(net.contract) : "0x";
         if (code === "0x") {
@@ -218,7 +210,7 @@ async function setupWallet(requestAccess) {
             toast("Connected to " + net.label + ", but no ReClaim contract is deployed there" + (net.contract ? " at " + net.contract : "") + ". If you deployed on " + other + ", pick it in the network menu.", "error", 10000);
             return false;
         }
-
+ 
         contract = new ethers.Contract(net.contract, CONTRACT_ABI, signer);
         updateWalletUI();
         if (requestAccess) toast("Connected to " + net.label + ".", "success", 2500);
@@ -230,14 +222,14 @@ async function setupWallet(requestAccess) {
         return false;
     }
 }
-
+ 
 function connectWallet() { return setupWallet(true); }
-
+ 
 async function requireWallet() {
     if (contract) return true;
     return setupWallet(true);
 }
-
+ 
 // Reconnect silently on every page, and follow wallet changes.
 window.addEventListener("DOMContentLoaded", () => {
     updateWalletUI();
@@ -255,7 +247,7 @@ window.addEventListener("DOMContentLoaded", () => {
         window.ethereum.on("chainChanged", () => setupWallet(false));
     }
 });
-
+ 
 // ---------------------------------------------------------------
 // Items panel (read from the chain, so it's always accurate)
 // ---------------------------------------------------------------
@@ -263,7 +255,7 @@ function togglePanel() {
     const p = $("panel");
     if (p) p.classList.toggle("collapsed");
 }
-
+ 
 async function loadItems() {
     if (!contract || !account) return renderItems(null);
     try {
@@ -286,13 +278,13 @@ async function loadItems() {
         console.error(err);
     }
 }
-
+ 
 function renderItems(items) {
     const list = $("items-list");
     if (!list) return;
     const count = $("itemCount");
     if (count) count.textContent = items ? items.length : "";
-
+ 
     if (items === null) {
         list.innerHTML = '<p class="panel-empty">Connect your wallet to see your items.</p>';
         return;
@@ -308,11 +300,36 @@ function renderItems(items) {
                 <span class="cd">${esc(i.code)}</span>
                 ${i.found ? `<a class="loc" href="https://www.openstreetmap.org/?mlat=${i.lat}&mlon=${i.lng}#map=16/${i.lat}/${i.lng}" target="_blank" rel="noopener">${esc(i.place)} (${i.lat}, ${i.lng})</a>` : ""}
                 ${i.found && i.contact ? `<span class="cd">Contact: ${esc(i.contact)}</span>` : ""}
+                ${i.found ? `<button class="dismiss-btn" type="button" data-code="${esc(i.code)}" onclick="dismissItem(this)" title="Mark this report as false and set the item back to Safe">Dismiss report</button>` : ""}
             </div>
             <span class="status-badge ${i.found ? "found" : ""}">${i.found ? "Found" : "Safe"}</span>
         </div>`).join("");
 }
-
+ 
+// ---------------------------------------------------------------
+// Dismiss a false report (owner only)
+// ---------------------------------------------------------------
+async function dismissItem(btn) {
+    if (!(await requireWallet())) return;
+    const code = btn.dataset.code;
+    if (!confirm("Dismiss the found report for " + code + "?\n\nThe finder's location and contact will be cleared and the item goes back to Safe.")) return;
+ 
+    btn.disabled = true;
+    btn.textContent = "Confirm in wallet…";
+    try {
+        const tx = await contract.dismissReport(code);
+        btn.textContent = "Dismissing…";
+        await tx.wait();
+        await loadItems();
+        toast("Report dismissed. " + code + " is back to Safe.", "success");
+    } catch (err) {
+        console.error(err);
+        toast(friendlyError(err), "error", 7000);
+        btn.disabled = false;
+        btn.textContent = "Dismiss report";
+    }
+}
+ 
 // ---------------------------------------------------------------
 // Register
 // ---------------------------------------------------------------
@@ -322,37 +339,37 @@ function randomString(length) {
     crypto.getRandomValues(bytes);
     return Array.from(bytes, (b) => CODE_CHARS[b % CODE_CHARS.length]).join("");
 }
-
+ 
 function generatePublicCode() {
     const input = $("regPublicCode");
     if (input) input.value = "TAG-" + randomString(8);
 }
 window.addEventListener("DOMContentLoaded", generatePublicCode);
-
+ 
 async function handleRegistration() {
     if (!(await requireWallet())) return;
-
+ 
     const publicCode = $("regPublicCode").value.trim();
     const name = $("regName").value.trim();
     if (!publicCode || !name) {
         toast("Enter an item name.", "error");
         return;
     }
-
+ 
     // The secret code is generated for the owner and shown once after registering.
     const secretCode = "sec_" + randomString(12);
-
+ 
     await withBusy("registerBtn", "Confirm in wallet…", async () => {
         const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
             ["string", "string", "address"],
             [publicCode, secretCode, account]
         );
         const secretHash = ethers.keccak256(encoded);
-
+ 
         const tx = await contract.registerItem(publicCode, name, secretHash);
         $("registerBtn").textContent = "Registering…";
         await tx.wait();
-
+ 
         await loadItems();
         showReceipt({ name, publicCode, secretCode, txHash: tx.hash });
         toast("Item registered.", "success", 3000);
@@ -360,7 +377,7 @@ async function handleRegistration() {
         generatePublicCode();
     });
 }
-
+ 
 // Shown once, right after registering. The secret is never stored by the site,
 // and it can't be recovered from the chain, so this is the owner's only copy.
 function showReceipt(r) {
@@ -389,7 +406,7 @@ function showReceipt(r) {
     box.hidden = false;
     box.scrollIntoView({ behavior: "smooth", block: "center" });
 }
-
+ 
 function hideReceipt() {
     const box = $("receipt");
     if (!box) return;
@@ -397,7 +414,7 @@ function hideReceipt() {
     box.innerHTML = "";
     box.dataset.secret = "";
 }
-
+ 
 async function copyText(text) {
     try {
         await navigator.clipboard.writeText(text);
@@ -411,7 +428,7 @@ async function copyText(text) {
     }
     toast("Copied.", "success", 1500);
 }
-
+ 
 function downloadReceipt() {
     const box = $("receipt");
     if (!box) return;
@@ -432,23 +449,23 @@ function downloadReceipt() {
     a.click();
     URL.revokeObjectURL(url);
 }
-
+ 
 // ---------------------------------------------------------------
 // Report found
 // ---------------------------------------------------------------
 // The contract stores lat/lng as uint32. Negative coordinates are stored as
 // their 32-bit two's-complement value (>>> 0); decode with `| 0` to read them back.
 const toU32 = (deg) => Math.round(deg * 1e6) >>> 0;
-
+ 
 async function reportFound() {
     if (!(await requireWallet())) return;
-
+ 
     const publicCode = $("foundPublicCode").value.trim();
     const locationName = $("foundLocation").value.trim();
     const lat = parseFloat($("foundLat").value);
     const lng = parseFloat($("foundLng").value);
     const contact = $("foundContact").value.trim();
-
+ 
     if (!publicCode || !locationName || isNaN(lat) || isNaN(lng)) {
         toast("Enter the public code, a location name and coordinates.", "error");
         return;
@@ -457,7 +474,7 @@ async function reportFound() {
         toast("Coordinates are out of range.", "error");
         return;
     }
-
+ 
     await withBusy("reportBtn", "Confirm in wallet…", async () => {
         const tx = await contract.reportFound(publicCode, locationName, toU32(lat), toU32(lng), contact);
         $("reportBtn").textContent = "Reporting…";
@@ -466,21 +483,21 @@ async function reportFound() {
         toast("Reported. The owner can now see where you found it.", "success");
     });
 }
-
+ 
 // ---------------------------------------------------------------
 // Claim
 // ---------------------------------------------------------------
 async function handleClaim() {
     if (!(await requireWallet())) return;
-
+ 
     const publicCode = $("claimPublicCode").value.trim();
     const secretCode = $("claimSecretCode").value;
-
+ 
     if (!publicCode || !secretCode) {
         toast("Enter both the public code and your secret code.", "error");
         return;
     }
-
+ 
     await withBusy("claimBtn", "Confirm in wallet…", async () => {
         const tx = await contract.claimItemAndReset(publicCode, secretCode);
         $("claimBtn").textContent = "Claiming…";
@@ -490,3 +507,4 @@ async function handleClaim() {
         $("claimSecretCode").value = "";
     });
 }
+ 
