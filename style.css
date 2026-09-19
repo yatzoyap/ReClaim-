@@ -304,3 +304,5 @@ footer a:hover { color: var(--ink); }
     .receipt-row > span { grid-column: 1 / 3; }
     .receipt-row strong { grid-column: 1 / 3; }
 }
+
+.registered-item .loc { display: block; font-size: 0.76rem; color: var(--ink); margin-top: 2px; }

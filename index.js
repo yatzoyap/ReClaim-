@@ -269,7 +269,19 @@ async function loadItems() {
     try {
         const codes = await contract.getOwnerCodes(account);
         const items = await Promise.all(codes.map((c) => contract.getItem(c)));
-        renderItems(items.map((i) => ({ name: i.name, code: i.publicCode, found: Number(i.status) === 1 })));
+        renderItems(items.map((i) => {
+            const found = Number(i.status) === 1;
+            return {
+                name: i.name,
+                code: i.publicCode,
+                found,
+                place: found ? i.foundLocationName : "",
+                // lat/lng are stored as 32-bit two's complement; "| 0" restores the sign.
+                lat: found ? (Number(i.lat) | 0) / 1e6 : null,
+                lng: found ? (Number(i.lng) | 0) / 1e6 : null,
+                contact: found ? i.finderContact : ""
+            };
+        }));
     } catch (err) {
         console.error(err);
     }
@@ -294,21 +306,26 @@ function renderItems(items) {
             <div style="min-width:0">
                 <span class="nm">${esc(i.name)}</span>
                 <span class="cd">${esc(i.code)}</span>
+                ${i.found ? `<a class="loc" href="https://www.openstreetmap.org/?mlat=${i.lat}&mlon=${i.lng}#map=16/${i.lat}/${i.lng}" target="_blank" rel="noopener">${esc(i.place)} (${i.lat}, ${i.lng})</a>` : ""}
+                ${i.found && i.contact ? `<span class="cd">Contact: ${esc(i.contact)}</span>` : ""}
             </div>
-            <span class="status-badge ${i.found ? "found" : ""}">${i.found ? "Found" : "Registered"}</span>
+            <span class="status-badge ${i.found ? "found" : ""}">${i.found ? "Found" : "Safe"}</span>
         </div>`).join("");
 }
 
 // ---------------------------------------------------------------
 // Register
 // ---------------------------------------------------------------
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function randomString(length) {
+    const bytes = new Uint32Array(length);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (b) => CODE_CHARS[b % CODE_CHARS.length]).join("");
+}
+
 function generatePublicCode() {
     const input = $("regPublicCode");
-    if (!input) return;
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const bytes = new Uint32Array(8);
-    crypto.getRandomValues(bytes);
-    input.value = "TAG-" + Array.from(bytes, (b) => chars[b % chars.length]).join("");
+    if (input) input.value = "TAG-" + randomString(8);
 }
 window.addEventListener("DOMContentLoaded", generatePublicCode);
 
@@ -317,12 +334,13 @@ async function handleRegistration() {
 
     const publicCode = $("regPublicCode").value.trim();
     const name = $("regName").value.trim();
-    const secretCode = $("regSecretCode").value;
-
-    if (!publicCode || !name || !secretCode) {
-        toast("Fill in the item name and your secret code.", "error");
+    if (!publicCode || !name) {
+        toast("Enter an item name.", "error");
         return;
     }
+
+    // The secret code is generated for the owner and shown once after registering.
+    const secretCode = "sec_" + randomString(12);
 
     await withBusy("registerBtn", "Confirm in wallet…", async () => {
         const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -339,7 +357,6 @@ async function handleRegistration() {
         showReceipt({ name, publicCode, secretCode, txHash: tx.hash });
         toast("Item registered.", "success", 3000);
         $("regName").value = "";
-        $("regSecretCode").value = "";
         generatePublicCode();
     });
 }
@@ -414,13 +431,6 @@ function downloadReceipt() {
     a.download = "reclaim-" + box.dataset.code + ".txt";
     a.click();
     URL.revokeObjectURL(url);
-}
-
-function toggleSecret() {
-    const input = $("regSecretCode"), btn = $("toggleSecretBtn");
-    const show = input.type === "password";
-    input.type = show ? "text" : "password";
-    btn.textContent = show ? "Hide" : "Show";
 }
 
 // ---------------------------------------------------------------

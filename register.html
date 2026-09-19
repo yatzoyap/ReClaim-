@@ -23,7 +23,7 @@
 </nav>
 <main class="narrow">
     <h1>Register an item</h1>
-    <p class="lede">The <strong>public code</strong> goes on the tag for anyone to see. The <strong>secret code</strong> is yours alone and is needed to claim the item later.</p>
+    <p class="lede">Name your item. You get a <strong>public code</strong> for the tag and a private <strong>secret code</strong> to claim the item later.</p>
 
     <div class="card">
         <label for="regPublicCode">Public code</label>
@@ -33,12 +33,7 @@
         <label for="regName">Item name</label>
         <input type="text" id="regName" placeholder="Blue backpack" maxlength="60">
 
-        <label for="regSecretCode">Secret code</label>
-        <div class="field-wrap">
-            <input type="password" id="regSecretCode" placeholder="Only you should know this" maxlength="60" autocomplete="off">
-            <button type="button" class="field-toggle" id="toggleSecretBtn" onclick="toggleSecret()">Show</button>
-        </div>
-        <p class="hint">Stored on-chain only as a hash and shown to you once after registering. It can never be recovered.</p>
+        <p class="hint">A secret code is generated for you when you register. It is shown once, stored on-chain only as a hash, and can never be recovered.</p>
 
         <div class="stack"><button class="btn" id="registerBtn" onclick="handleRegistration()">Register item</button></div>
     </div>
