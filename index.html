@@ -1,124 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReClaim — Lost &amp; Found, On-Chain | Girl Meets Tech Hackathon</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReClaim: BOT Lost and Found</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Map styles (Leaflet + OpenStreetMap) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+  <link rel="stylesheet" href="style.css">
 </head>
-<body onload="generatePublicCode()">
-<nav>
-    <a class="logo" href="index.html"><span class="logo-mark">🔍</span>Re<em>Claim</em></a>
-    <div class="nav-links"><a href="index.html" class="active">Home</a><a href="register.html" class="">Register</a><a href="report.html" class="">Report Found</a><a href="claim.html" class="">Claim</a></div>
-</nav>
-<main class="page-enter">
-    <section class="hero">
-        <div class="badges-row">
-            <span class="chip">⚡ BOT Chain</span>
-            <span class="chip">🛠️ Build Week Hackathon Vol.2</span>
-            <span class="chip">🌐 Web3 dApp</span>
+<body>
+
+  <!-- ============================================================
+       Top bar: logo, navigation, wallet button
+       ============================================================ -->
+  <header class="topbar">
+    <a class="brand" href="./">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 2h10l4 4v16H3V6z" fill="#ffc531"/>
+        <circle cx="12" cy="7.5" r="2" fill="#f1f3f8"/>
+      </svg>
+      ReClaim
+    </a>
+
+    <nav class="nav-links" aria-label="Main">
+      <button id="nav-items" class="active" aria-current="page" onclick="showPage('items')">My items</button>
+      <button id="nav-register" onclick="showPage('register')">Register</button>
+      <button id="nav-found" onclick="showPage('found')">I found something</button>
+      <button id="nav-claim" onclick="showPage('claim')">Claim</button>
+    </nav>
+
+    <button id="connectBtn" class="btn primary" onclick="connectWallet()">Connect Wallet</button>
+  </header>
+
+  <main>
+
+    <!-- ============================================================
+         Page 1: My items
+         ============================================================ -->
+    <section id="items" class="page-section active">
+
+      <!-- Shown until a wallet is connected -->
+      <div id="intro">
+        <div class="intro">
+          <div>
+            <h1>Tag your stuff and <i>ReClaim</i> it.</h1>
+            <p class="lead">
+              Register something you own and stick the QR tag on it. If it goes missing,
+              whoever finds it can scan the tag and report where it is. The record lives
+              on the blockchain, so there's no company in the middle.
+            </p>
+            <button class="btn primary big" onclick="connectWallet()">Connect Wallet</button>
+          </div>
+          <div>
+            <div id="sampleTag"></div>
+            <p class="hint center">A sample tag. Give your item a name and receive its own QR code.</p>
+          </div>
         </div>
-        <h1 style="margin-top:1.2rem">Lost it? <span class="grad">ReClaim</span> it.</h1>
-        <p class="tagline">A decentralized Lost &amp; Found — register your valuables on an immutable
-        smart contract, finders report them with GPS, and you claim them back with a secret code.
-        No middlemen. No lost paperwork. Just proof, on-chain.</p>
+
+        <ol class="steps">
+          <li>
+            <strong>Register the item</strong>
+            <span>Name your item and receive a public code.</span>
+          </li>
+          <li>
+            <strong>Attach the tag</strong>
+            <span>Print the QR tag and stick it on the item. Keep the secret code to yourself.</span>
+          </li>
+          <li>
+            <strong>Someone finds it</strong>
+            <span>They scan the tag and report where they found it. Your item switches to Found.</span>
+          </li>
+          <li>
+            <strong>Reclaim it back</strong>
+            <span>Enter both codes. The item goes back to Registered and the tag is ready to reuse.</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Shown once a wallet is connected -->
+      <div id="dashboard" hidden>
+        <div class="page-head">
+          <div>
+            <h1>Your items</h1>
+            <p id="walletLine" class="hint wallet-line"></p>
+          </div>
+          <div class="head-actions">
+            <button class="btn" onclick="loadMyItems()">Refresh</button>
+            <button class="btn primary" onclick="showPage('register')">Register an item</button>
+          </div>
+        </div>
+
+        <div id="items-list" class="items"></div>
+      </div>
     </section>
 
-    <div class="vm-grid">
-        <div class="card vm-card">
-            <div class="vm-icon">🎯</div>
-            <h2>Our Vision</h2>
-            <p>A world where every lost item securely finds its way home. By anchoring ownership
-            and recovery to the blockchain, we make losing things recoverable — permanently and
-            trustlessly.</p>
-        </div>
-        <div class="card vm-card">
-            <div class="vm-icon">🚀</div>
-            <h2>Our Mission</h2>
-            <p>To streamline the recovery of lost physical assets using decentralized Web3
-            technology — one smart contract on BOT Chain that anyone, anywhere can use to tag,
-            find, and reclaim what matters to them.</p>
-        </div>
-    </div>
 
-    <div class="card" style="max-width:560px; margin:0 auto; text-align:center">
-        <h2>🔗 Connect Your Wallet</h2>
-        <p>Authenticate with MetaMask to start interacting with the ReClaim smart contract.
-        Every registration, report and claim happens through your wallet.</p>
-        <button class="btn" onclick="connectWallet()">Connect MetaMask</button>
-        <p id="walletAddress" class="wallet-line" style="margin-top:1rem">Wallet: Not connected</p>
-    </div>
+    <!-- ============================================================
+         Page 2: Register an item
+         ============================================================ -->
+    <section id="register" class="page-section">
+      <div class="two-col">
 
-    <div class="action-grid">
-        <a class="action-card" href="register.html">
-            <div class="ac-icon">🏷️</div>
-            <h3>Register Item</h3>
-            <p>Tag your valuables with a public + secret code pair, stored on-chain forever.</p>
-            <button class="btn">Go to Registry →</button>
-        </a>
-        <a class="action-card" href="report.html">
-            <div class="ac-icon">📍</div>
-            <h3>Report Found</h3>
-            <p>Found a tagged item? Pin its location on the map and notify the owner instantly.</p>
-            <button class="btn btn-success">Report an Item →</button>
-        </a>
-        <a class="action-card" href="claim.html">
-            <div class="ac-icon">🔐</div>
-            <h3>Claim &amp; Reset</h3>
-            <p>Got your item back? Verify with your secret code and reactivate the tag.</p>
-            <button class="btn btn-warn">Claim Item →</button>
-        </a>
+        <div>
+          <!-- The form -->
+          <div id="regForm">
+            <h1>Register an item</h1>
+            <p class="lead">Give it a name. Your public code and secret code appear as soon as it's registered.</p>
+
+            <label for="regName">Item name</label>
+            <input id="regName" type="text" maxlength="60" placeholder="e.g. Blue Jansport backpack" autocomplete="off" oninput="updateRegisterPreview()">
+            <p class="hint">The tag on the right is a preview. Its QR code appears once the item is registered.</p>
+
+            <div class="form-actions">
+              <button id="regBtn" class="btn primary big" onclick="handleRegistration()">Register item</button>
+            </div>
+          </div>
+
+          <!-- Shown after the item is registered -->
+          <div id="regDone" hidden>
+            <h1>Item registered</h1>
+            <p class="lead">Here are your codes. Print the tag and stick it on your item.</p>
+
+            <div class="secret-box">
+              <div class="code-line">
+                <div>
+                  <span>Public code (goes on the tag)</span>
+                  <strong id="regDonePublic"></strong>
+                </div>
+                <button class="btn small" onclick="copyText($('regDonePublic').textContent, 'Public code copied.')">Copy</button>
+              </div>
+              <div class="code-line">
+                <div>
+                  <span>Secret code (keep it private)</span>
+                  <strong id="regDoneSecret"></strong>
+                </div>
+                <button class="btn small" onclick="copyText($('regDoneSecret').textContent, 'Secret code copied.')">Copy</button>
+              </div>
+              <p class="hint">
+                Save your secret code now. You'll need it, with the public code, to claim the item
+                after it's found. It isn't stored anywhere, so nobody can recover it for you.
+              </p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" onclick="printCurrentTag()">Print tag</button>
+              <button class="btn" onclick="copyCurrentLink()">Copy tag link</button>
+              <button class="btn" onclick="registerAnother()">Register another item</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live tag preview -->
+        <div id="regTagPreview"></div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         Page 3: I found something (finder)
+         ============================================================ -->
+    <section id="found" class="page-section">
+      <div class="two-col">
+
+        <div>
+          <h1>I found something</h1>
+          <p class="lead">Scanned a tag? Tell the owner where the item is now.</p>
+
+          <label for="foundPublicCode">Public code</label>
+          <input id="foundPublicCode" type="text" placeholder="TAG-XXXXXXXX" autocomplete="off" spellcheck="false" onchange="lookUpFoundItem()">
+          <div id="foundLookup" class="lookup" hidden></div>
+
+          <label for="foundLocation">Where is it?</label>
+          <div class="field-row">
+            <input id="foundLocation" type="text" maxlength="100" placeholder="e.g. Front desk, Central Library" autocomplete="off">
+            <button class="btn" type="button" onclick="findOnMap()">Find on map</button>
+          </div>
+          <p class="hint">Type the place name, then click the map to put the pin exactly where the item is.</p>
+
+          <label for="foundContact">How can the owner reach you? (optional)</label>
+          <input id="foundContact" type="text" maxlength="80" placeholder="Phone number or Instagram handle" autocomplete="off">
+          <p class="hint">Everything on this page is saved publicly on the blockchain, contact included.</p>
+
+          <div class="form-actions">
+            <button id="foundBtn" class="btn primary big" onclick="handleReportFound()">Report as found</button>
+          </div>
+        </div>
+
+        <div>
+          <div id="foundMap" class="map tall"></div>
+          <div class="field-row map-row">
+            <p id="foundCoords" class="hint">No pin yet.</p>
+            <button class="btn small" type="button" onclick="useMyLocation()">Use my location</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         Page 4: Claim (owner)
+         ============================================================ -->
+    <section id="claim" class="page-section narrow">
+      <h1>Claim your item</h1>
+      <p class="lead">
+        Got it back? Enter both codes to close the report. The item goes back to
+        Registered and the same tag works again.
+      </p>
+
+      <label for="claimPublicCode">Public code</label>
+      <input id="claimPublicCode" type="text" placeholder="TAG-XXXXXXXX" autocomplete="off" spellcheck="false">
+
+      <label for="claimSecretCode">Secret code</label>
+      <input id="claimSecretCode" type="text" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+      <p class="hint">Type it exactly as it was shown when you registered. You must be using the wallet that registered the item.</p>
+
+      <div class="form-actions">
+        <button id="claimBtn" class="btn primary big" onclick="handleClaim()">Claim item</button>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- Small message that pops up at the bottom -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Pop-up used by "View tag" in the item list -->
+  <dialog id="tagDialog">
+    <div id="tagDialogBody"></div>
+    <div class="dialog-actions">
+      <button class="btn primary" onclick="printDialogTag()">Print tag</button>
+      <button class="btn" onclick="copyDialogLink()">Copy link</button>
+      <button class="btn" onclick="$('tagDialog').close()">Close</button>
     </div>
-</main>
-<footer>
-    <div class="foot-brand">ReClaim</div>
-    <div>A decentralized Lost &amp; Found, built on <strong>BOT Chain</strong> for Girl Meets Tech — Build Week Hackathon Vol.2</div>
-    <div class="foot-links">
-        <a href="https://botchain.ai" target="_blank" rel="noopener">BOT Chain</a> ·
-        <a href="https://scan.botchain.ai" target="_blank" rel="noopener">BOT Chain Explorer</a> ·
-        <a href="https://github.com" target="_blank" rel="noopener">GitHub Repo</a>
-    </div>
-    <div style="font-size:0.78rem; opacity:0.7">© 2026 ReClaim · Contracts verified on-chain</div>
-</footer>
-<div id="floating-panel">
-    <h3>Your Items Dashboard</h3>
-    <div id="items-list">
-        <p style="font-size: 0.9rem; color: var(--text-muted);">No items registered yet.</p>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
-<script src="index.js"></script>
-<script>
-/* Session bridge — keeps your items visible on every page.
-   Your index.js is untouched; this just saves/restores its localItems array. */
-window.addEventListener('DOMContentLoaded', function () {
-    try {
-        var saved = JSON.parse(localStorage.getItem('reclaim_items') || '[]');
-        if (Array.isArray(saved) && saved.length) {
-            localItems.push.apply(localItems, saved);
-        }
-    } catch (e) {}
-    if (typeof updateFloatingPanel === 'function') updateFloatingPanel();
-});
-var _origUpdatePanel = updateFloatingPanel;
-updateFloatingPanel = function () {
-    try { localStorage.setItem('reclaim_items', JSON.stringify(localItems)); } catch (e) {}
-    _origUpdatePanel();
-};
-/* Ripple effect for all buttons */
-document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.btn, .action-card');
-    if (!btn) return;
-    var rect = btn.getBoundingClientRect();
-    var d = Math.max(rect.width, rect.height);
-    var s = document.createElement('span');
-    s.className = 'ripple';
-    s.style.width = s.style.height = d + 'px';
-    s.style.left = (e.clientX - rect.left - d / 2) + 'px';
-    s.style.top = (e.clientY - rect.top - d / 2) + 'px';
-    btn.appendChild(s);
-    setTimeout(function () { s.remove(); }, 600);
-});
-</script>
+  </dialog>
+
+  <!-- Only visible when printing: this is what ends up on paper -->
+  <div id="printArea"></div>
+
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <!-- The app itself -->
+  <script src="index.js"></script>
 </body>
 </html>
