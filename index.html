@@ -39,6 +39,9 @@
     <button id="connectBtn" class="btn primary" onclick="connectWallet()">Connect Wallet</button>
   </header>
 
+  <!-- Appears when there is no ReClaim contract at the address in index.js -->
+  <div id="netBanner" class="banner" role="alert" hidden></div>
+
   <main>
 
     <!-- ============================================================
@@ -71,7 +74,7 @@
           </li>
           <li>
             <strong>Attach the tag</strong>
-            <span>Print the QR tag and stick it on the item. Keep the secret code to yourself.</span>
+            <span>Print the QR tag and stick it on the item.</span>
           </li>
           <li>
             <strong>Someone finds it</strong>
@@ -79,7 +82,7 @@
           </li>
           <li>
             <strong>Reclaim it back</strong>
-            <span>Enter both codes. The item goes back to Registered and the tag is ready to reuse.</span>
+            <span>Press Claim on the item. It goes back to Registered and the tag is ready to reuse.</span>
           </li>
         </ol>
       </div>
@@ -112,7 +115,7 @@
           <!-- The form -->
           <div id="regForm">
             <h1>Register an item</h1>
-            <p class="lead">Give it a name. Your public code and secret code appear as soon as it's registered.</p>
+            <p class="lead">Give it a name. Its public code appears as soon as it's registered.</p>
 
             <label for="regName">Item name</label>
             <input id="regName" type="text" maxlength="60" placeholder="e.g. Blue Jansport backpack" autocomplete="off" oninput="updateRegisterPreview()">
@@ -126,9 +129,9 @@
           <!-- Shown after the item is registered -->
           <div id="regDone" hidden>
             <h1>Item registered</h1>
-            <p class="lead">Here are your codes. Print the tag and stick it on your item.</p>
+            <p class="lead">Print the tag and stick it on your item.</p>
 
-            <div class="secret-box">
+            <div class="code-box">
               <div class="code-line">
                 <div>
                   <span>Public code (goes on the tag)</span>
@@ -136,16 +139,8 @@
                 </div>
                 <button class="btn small" onclick="copyText($('regDonePublic').textContent, 'Public code copied.')">Copy</button>
               </div>
-              <div class="code-line">
-                <div>
-                  <span>Secret code (keep it private)</span>
-                  <strong id="regDoneSecret"></strong>
-                </div>
-                <button class="btn small" onclick="copyText($('regDoneSecret').textContent, 'Secret code copied.')">Copy</button>
-              </div>
               <p class="hint">
-                Save your secret code now. You'll need it, with the public code, to claim the item
-                after it's found. It isn't stored anywhere, so nobody can recover it for you.
+                Only the wallet you registered with can claim, dismiss or delete this item, so there's nothing else to remember.
               </p>
             </div>
 
@@ -186,7 +181,7 @@
 
           <label for="foundContact">How can the owner reach you? (optional)</label>
           <input id="foundContact" type="text" maxlength="80" placeholder="Phone number or Instagram handle" autocomplete="off">
-          <p class="hint">Everything on this page is saved publicly on the blockchain, contact included.</p>
+          <p class="hint">Do not save personal information as it is stored on the blockchain publicly.</p>
 
           <div class="form-actions">
             <button id="foundBtn" class="btn primary big" onclick="handleReportFound()">Report as found</button>
@@ -210,16 +205,14 @@
     <section id="claim" class="page-section narrow">
       <h1>Claim your item</h1>
       <p class="lead">
-        Got it back? Enter both codes to close the report. The item goes back to
+        Got it back? Enter the item's public code to close the report. The item goes back to
         Registered and the same tag works again.
       </p>
 
       <label for="claimPublicCode">Public code</label>
-      <input id="claimPublicCode" type="text" placeholder="TAG-XXXXXXXX" autocomplete="off" spellcheck="false">
-
-      <label for="claimSecretCode">Secret code</label>
-      <input id="claimSecretCode" type="text" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
-      <p class="hint">Type it exactly as it was shown when you registered. You must be using the wallet that registered the item.</p>
+      <input id="claimPublicCode" type="text" placeholder="TAG-XXXXXXXX" autocomplete="off" spellcheck="false" onchange="lookUpClaimItem()">
+      <div id="claimSummary" class="lookup" hidden></div>
+      <p class="hint">You must be using the wallet that registered the item.</p>
 
       <div class="form-actions">
         <button id="claimBtn" class="btn primary big" onclick="handleClaim()">Claim item</button>
@@ -239,6 +232,17 @@
       <button class="btn primary" onclick="printDialogTag()">Print tag</button>
       <button class="btn" onclick="copyDialogLink()">Copy link</button>
       <button class="btn" onclick="$('tagDialog').close()">Close</button>
+    </div>
+  </dialog>
+
+  <!-- Pop-up that asks "are you sure?" before dismissing a report or deleting an item -->
+  <dialog id="confirmDialog">
+    <h3 id="confirmDialogTitle"></h3>
+    <p id="confirmDialogText" class="hint"></p>
+
+    <div class="dialog-actions">
+      <button id="confirmDialogOk" class="btn primary" onclick="finishConfirmDialog(true)">Confirm</button>
+      <button class="btn" autofocus onclick="finishConfirmDialog(false)">Cancel</button>
     </div>
   </dialog>
 

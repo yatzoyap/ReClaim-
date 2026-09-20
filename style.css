@@ -109,6 +109,18 @@ a { color: var(--cobalt); }
 
 #connectBtn { margin-left: auto; }
 
+.banner {
+  padding: 14px max(24px, calc((100% - 1040px) / 2 + 24px));
+  border-bottom: 1px solid #e3aaaa;
+  background: #fbe3e3;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .banner { padding: 12px 16px; }
+}
+
 #connectBtn.connected:disabled {
   opacity: 1;
   background: var(--surface);
@@ -255,6 +267,16 @@ label.check input {
   border-color: var(--cobalt-dark);
 }
 
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger:hover { background: #fbe3e3; }
+
+.btn.danger-solid {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.btn.danger-solid:hover { background: #a82424; border-color: #a82424; }
+
 .btn.big { min-height: 50px; padding: 0 26px; }
 .btn.small { min-height: 36px; padding: 0 12px; font-size: 0.9rem; }
 
@@ -381,7 +403,7 @@ label.check input {
 /* ---------------------------------------------------------------
    Register page
    --------------------------------------------------------------- */
-.secret-box {
+.code-box {
   margin-top: 28px;
   padding: 16px 18px;
   border: 2px solid var(--ink);
@@ -389,7 +411,7 @@ label.check input {
   background: var(--surface);
 }
 
-.secret-box span { font-size: 0.9rem; color: var(--ink-soft); }
+.code-box span { font-size: 0.9rem; color: var(--ink-soft); }
 
 .code-line {
   display: flex;
@@ -402,9 +424,9 @@ label.check input {
 
 .code-line:first-child { padding-top: 0; }
 
-.secret-box .hint { margin-top: 14px; }
+.code-box .hint { margin-top: 14px; }
 
-.secret-box strong {
+.code-box strong {
   display: block;
   margin: 2px 0 0;
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
@@ -438,6 +460,12 @@ label.check input {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.item-tools {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
 }
 
 .item-head h3 {
@@ -479,15 +507,15 @@ label.check input {
   margin-top: 18px;
 }
 
-.item-found dl {
+.details {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 6px 16px;
   margin: 0;
 }
 
-.item-found dt { color: var(--ink-soft); }
-.item-found dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.details dt { color: var(--ink-soft); }
+.details dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
 
 .item-actions {
   display: flex;
@@ -495,6 +523,65 @@ label.check input {
   gap: 8px;
   margin: 20px 0 14px;
 }
+
+/* History timeline inside each item */
+.history {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.history summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.history-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-list li {
+  position: relative;
+  display: grid;
+  padding: 0 0 16px 28px;
+  font-size: 0.95rem;
+}
+
+/* the dot */
+.history-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+/* the line that joins the dots */
+.history-list li::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 22px;
+  bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+
+.history-list li:last-child { padding-bottom: 0; }
+.history-list li:last-child::after { display: none; }
+
+.history-list li.found::before { background: var(--signal); }
+.history-list li.returned::before { background: var(--green); border-color: var(--green); }
+.history-list li.dismissed::before { background: var(--line); }
+
+.history-list span { color: var(--ink-soft); font-size: 0.875rem; }
 
 .empty {
   padding: 48px 24px;
@@ -550,6 +637,8 @@ label.check input {
   font-size: 0.95rem;
 }
 
+.lookup .details { margin-top: 10px; }
+
 .lookup.warn { border-left-color: var(--signal); background: #fff3cc; }
 .lookup.bad { border-left-color: var(--danger); background: #fbe3e3; }
 
@@ -583,6 +672,8 @@ dialog {
   background: var(--paper);
   color: var(--ink);
 }
+
+#confirmDialog h3 { margin-bottom: 10px; }
 
 dialog::backdrop { background: rgba(26, 35, 80, 0.55); }
 
@@ -621,6 +712,7 @@ dialog::backdrop { background: rgba(26, 35, 80, 0.55); }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 56px; }
 
   .item-found { grid-template-columns: minmax(0, 1fr); }
+  .item-head { flex-wrap: wrap; }
 
   .map.tall { height: 320px; }
 }

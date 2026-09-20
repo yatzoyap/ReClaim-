@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------
 
 // Address of ReClaim.sol after deploying it in Remix.
-const contractAddress = "0xf29614100602bEbc020B752285725Eb5bF4decb7";
+const contractAddress = "0x4e151bEC8ee2287dc397Ac46596C53440F684b85";
 
 // The QR code on a tag links to this page. Leave it empty to use whatever
 // address the page is opened from right now. Before you print real tags,
@@ -14,24 +14,24 @@ const contractAddress = "0xf29614100602bEbc020B752285725Eb5bF4decb7";
 const APP_URL = "";
 
 const contractABI = [
-    "function registerItem(string publicCode, string name, bytes32 secretHash)",
+    "function registerItem(string publicCode, string name)",
     "function reportFound(string publicCode, string locationName, uint32 lat, uint32 lng, string contact)",
-    "function claimItemAndReset(string publicCode, string secretCode)",
+    "function claimItemAndReset(string publicCode)",
     "function dismissReport(string publicCode)",
-    "function getItem(string publicCode) view returns (tuple(bytes32 secretHash, address owner, address finder, uint8 status, uint32 lat, uint32 lng, uint64 registeredAt, uint64 foundAt, string publicCode, string name, string foundLocationName, string finderContact))",
+    "function deleteItem(string publicCode)",
+    "function getItem(string publicCode) view returns (tuple(address owner, address finder, uint8 status, uint32 lat, uint32 lng, uint64 registeredAt, uint64 foundAt, string publicCode, string name, string foundLocationName, string finderContact))",
+    "function getHistory(string publicCode) view returns (tuple(uint8 action, uint64 timestamp, address actor)[])",
     "function getOwnerCodes(address owner) view returns (string[])",
 
     // Custom errors, so ethers can tell us which one the contract threw
     "error UnknownCode()",
     "error CodeLengthInvalid()",
     "error NameLengthInvalid()",
-    "error MissingSecretHash()",
     "error CodeAlreadyUsed()",
     "error ItemNotOpen()",
     "error NotOriginalFinder()",
     "error LocationInvalid()",
     "error Unauthorized()",
-    "error WrongSecretCode()",
     "error InvalidStatus()"
 ];
 
@@ -40,13 +40,11 @@ const contractErrors = {
     UnknownCode: "That public code isn't registered. Check the code on the tag.",
     CodeLengthInvalid: "The public code must be 6 to 32 characters.",
     NameLengthInvalid: "The item name must be 1 to 60 characters.",
-    MissingSecretHash: "The secret code is missing.",
-    CodeAlreadyUsed: "That public code is already taken. Get new codes and try again.",
+    CodeAlreadyUsed: "That public code is already taken. Please press Register again to get a new one.",
     ItemNotOpen: "This item can't be reported right now.",
     NotOriginalFinder: "Someone else already reported this item. Only they can update the report.",
     LocationInvalid: "The location name must be 1 to 100 characters and the contact 80 or fewer.",
     Unauthorized: "Only the owner of this item can do that. Switch to the wallet that registered it.",
-    WrongSecretCode: "That secret code doesn't match this item.",
     InvalidStatus: "This item hasn't been reported as found."
 };
 
@@ -226,7 +224,30 @@ async function setupSigner() {
     account = await signer.getAddress();
     contract = new ethers.Contract(contractAddress, contractABI, signer);
     updateWalletUI();
-    await loadMyItems();
+    if (await checkContract()) await loadMyItems();
+}
+
+// Makes sure there really is a contract at contractAddress on the network the wallet is using.
+// The usual reasons there isn't: the address in this file is an old deployment, or the wallet
+// is on a different network than the one the contract was deployed to.
+async function checkContract() {
+    const banner = $("netBanner");
+    try {
+        const code = await provider.getCode(contractAddress);
+        if (code !== "0x") {
+            banner.hidden = true;
+            return true;
+        }
+        const network = await provider.getNetwork();
+        banner.textContent = `No ReClaim contract found at ${contractAddress} on the network your wallet is using `
+            + `(chain ID ${network.chainId}). Check that contractAddress at the top of index.js is your newest `
+            + `deployment, and that your wallet is on the same network you deployed to.`;
+        banner.hidden = false;
+        return false;
+    } catch (err) {
+        console.error(err);
+        return true;   // couldn't tell, so carry on and let the normal error messages handle it
+    }
 }
 
 function clearWallet() {
@@ -244,7 +265,7 @@ function updateWalletUI() {
         button.classList.add("connected");
         $("walletLine").textContent = "Connected as " + account;
     } else {
-        button.textContent = "Connect wallet";
+        button.textContent = "Connect Wallet";
         button.title = "";
         button.disabled = false;
         button.classList.remove("connected");
@@ -288,7 +309,7 @@ async function sendTx(button, makeTx) {
 // ---------------------------------------------------------------
 
 // Turns the raw contract struct into a plain object
-function parseItem(raw) {
+function parseItem(raw, rawHistory = []) {
     return {
         code: raw.publicCode,
         name: raw.name,
@@ -300,17 +321,27 @@ function parseItem(raw) {
         locationName: raw.foundLocationName,
         contact: raw.finderContact,
         registeredAt: Number(raw.registeredAt),
-        foundAt: Number(raw.foundAt)
+        foundAt: Number(raw.foundAt),
+        history: [...rawHistory].map((e) => ({ action: Number(e.action), at: Number(e.timestamp), actor: e.actor }))
     };
 }
 
 async function loadMyItems() {
     if (!account) return;
+
+    // Remember which histories are open, so a refresh doesn't snap them shut
+    openHistories = new Set(
+        [...document.querySelectorAll("details.history[open]")].map((d) => d.dataset.code)
+    );
+
     $("items-list").innerHTML = '<p class="hint">Loading your items…</p>';
     try {
         const codes = [...(await readContract.getOwnerCodes(account))];
         const rawItems = await Promise.all(codes.map((code) => readContract.getItem(code)));
-        localItems = rawItems.map(parseItem).reverse();   // newest first
+        const histories = await Promise.all(codes.map((code) => readContract.getHistory(code)));
+        localItems = rawItems
+            .map((raw, i) => parseItem(raw, histories[i]))
+            .sort((a, b) => b.registeredAt - a.registeredAt);   // newest first
         renderItems();
     } catch (err) {
         console.error(err);
@@ -325,6 +356,7 @@ async function loadMyItems() {
 // ---------------------------------------------------------------
 
 let itemMaps = [];   // small maps shown on "Found" items
+let openHistories = new Set();
 
 function renderItems() {
     itemMaps.forEach((m) => m.remove());
@@ -362,10 +394,63 @@ function itemHtml(item, index) {
                     <h3>${esc(item.name)} <span class="badge ${status}">${statusLabel}</span></h3>
                     <p class="item-code">${esc(item.code)}</p>
                 </div>
-                <button class="btn small" data-action="tag" data-code="${esc(item.code)}">View tag</button>
+                <div class="item-tools">
+                    <button class="btn small" data-action="tag" data-code="${esc(item.code)}">View tag</button>
+                    <button class="btn small danger" data-action="delete" data-code="${esc(item.code)}">Delete</button>
+                </div>
             </div>
             ${details}
+            ${historyHtml(item)}
         </article>`;
+}
+
+// ---- History ----------------------------------------------------
+
+// The contract stores Found / Dismissed / Returned. "Registered" comes from registeredAt.
+const ACTION_FOUND = 0, ACTION_DISMISSED = 1, ACTION_RETURNED = 2;
+
+function whoLabel(address) {
+    const isMe = account && address.toLowerCase() === account.toLowerCase();
+    return isMe ? "you" : shortAddr(address);
+}
+
+// Turns the raw log into lines a person can read, oldest first
+function historyEvents(item) {
+    const events = [{ kind: "registered", label: "Registered", at: item.registeredAt, actor: item.owner }];
+
+    let reportOpen = false;   // is there already an unresolved report?
+    item.history.forEach((entry) => {
+        if (entry.action === ACTION_FOUND) {
+            // A second report before the first was settled is the finder updating theirs
+            events.push({ kind: "found", label: reportOpen ? "Report updated" : "Reported found", at: entry.at, actor: entry.actor });
+            reportOpen = true;
+        } else if (entry.action === ACTION_DISMISSED) {
+            events.push({ kind: "dismissed", label: "Report dismissed", at: entry.at, actor: entry.actor });
+            reportOpen = false;
+        } else if (entry.action === ACTION_RETURNED) {
+            events.push({ kind: "returned", label: "Returned to owner", at: entry.at, actor: entry.actor });
+            reportOpen = false;
+        }
+    });
+    return events;
+}
+
+function historyHtml(item) {
+    const events = historyEvents(item).reverse();   // newest on top
+    const isOpen = openHistories.has(item.code) ? "open" : "";
+
+    const lines = events.map((e) => `
+        <li class="${e.kind}">
+            <strong>${e.label}</strong>
+            <span>${formatDate(e.at, true)}</span>
+            <span>by ${esc(whoLabel(e.actor))}</span>
+        </li>`).join("");
+
+    return `
+        <details class="history" data-code="${esc(item.code)}" ${isOpen}>
+            <summary>History (${events.length})</summary>
+            <ol class="history-list">${lines}</ol>
+        </details>`;
 }
 
 function foundDetailsHtml(item, index) {
@@ -373,7 +458,7 @@ function foundDetailsHtml(item, index) {
     return `
         <div class="item-found">
             <div>
-                <dl>
+                <dl class="details">
                     <dt>Found at</dt><dd>${esc(item.locationName)}</dd>
                     <dt>Reported</dt><dd>${formatDate(item.foundAt, true)}</dd>
                     <dt>Contact</dt><dd>${item.contact ? esc(item.contact) : "None given"}</dd>
@@ -383,6 +468,7 @@ function foundDetailsHtml(item, index) {
                     <button class="btn primary" data-action="claim" data-code="${esc(item.code)}">Claim item</button>
                     <button class="btn" data-action="dismiss" data-code="${esc(item.code)}">Dismiss report</button>
                 </div>
+                <p class="hint">Got it back? Claim it. Report looks wrong? Dismiss it.</p>
                 <a href="${osmLink}" target="_blank" rel="noopener">Open in OpenStreetMap</a>
             </div>
             <div class="map" id="map-${index}"></div>
@@ -397,13 +483,19 @@ $("items-list").addEventListener("click", (event) => {
     const code = button.dataset.code;
     if (button.dataset.action === "claim") startClaim(code);
     if (button.dataset.action === "dismiss") dismissReport(code, button);
+    if (button.dataset.action === "delete") deleteItem(code, button);
     if (button.dataset.action === "tag") viewTag(code);
 });
 
 async function dismissReport(code, button) {
     if (!requireWallet()) return;
-    const ok = confirm("Dismiss this report? The item goes back to Registered and the finder's details are cleared.");
-    if (!ok) return;
+
+    const sure = await askToConfirm({
+        title: "Dismiss this report?",
+        text: "Use this if the report is a mistake or spam. The item goes back to Registered and the finder's details are cleared. If you actually got the item back, use Claim instead.",
+        button: "Dismiss report"
+    });
+    if (!sure) return;
 
     if (await sendTx(button, () => contract.dismissReport(code))) {
         showToast("Report dismissed.", "success");
@@ -411,13 +503,50 @@ async function dismissReport(code, button) {
     }
 }
 
-function startClaim(code) {
-    $("claimPublicCode").value = code;
-    $("claimSecretCode").value = "";
-    showPage("claim");
-    $("claimSecretCode").focus();
+async function deleteItem(code, button) {
+    if (!requireWallet()) return;
+
+    const item = localItems.find((i) => i.code === code);
+    const name = item ? item.name : code;
+
+    const sure = await askToConfirm({
+        title: "Delete this item?",
+        text: `"${name}" will be removed for good, and its tag code can never be registered again.`,
+        button: "Delete item",
+        danger: true
+    });
+    if (!sure) return;
+
+    if (await sendTx(button, () => contract.deleteItem(code))) {
+        showToast("Item deleted.", "success");
+        loadMyItems();
+    }
 }
 
+// Opens the "are you sure?" pop-up. Resolves with true (confirmed) or false (cancelled).
+let confirmResolver = null;
+
+function askToConfirm({ title, text, button, danger = false }) {
+    $("confirmDialogTitle").textContent = title;
+    $("confirmDialogText").textContent = text;
+    $("confirmDialogOk").textContent = button;
+    $("confirmDialogOk").className = danger ? "btn danger-solid" : "btn primary";
+    $("confirmDialog").showModal();
+
+    return new Promise((resolve) => { confirmResolver = resolve; });
+}
+
+function finishConfirmDialog(answer) {
+    const resolve = confirmResolver;
+    confirmResolver = null;
+    if ($("confirmDialog").open) $("confirmDialog").close();
+    if (resolve) resolve(answer);
+}
+
+// Pressing Esc closes the dialog without going through our buttons
+$("confirmDialog").addEventListener("close", () => {
+    if (confirmResolver) finishConfirmDialog(false);
+});
 
 // ---------------------------------------------------------------
 // 7. Maps (Leaflet + OpenStreetMap)
@@ -558,7 +687,7 @@ function tagHtml(name, code) {
             <p class="tag-lead">Found this? Scan to tell the owner.</p>
             ${qr}
             <p class="tag-name">${esc(name)}</p>
-            <p class="tag-code">${code ? esc(code) : "Code is generated after registration"}</p>
+            <p class="tag-code">${code ? esc(code) : "Code coming soon"}</p>
         </div>`;
 }
 
@@ -586,31 +715,18 @@ const copyDialogLink = () => copyText(tagLink(dialogItem.code), "Tag link copied
 // 9. Register
 // ---------------------------------------------------------------
 
-let justRegistered = null;   // {name, code, secret} after a successful registration
+let justRegistered = null;   // {name, code} after a successful registration
 
-// Made fresh each time someone presses Register. They only become visible
-// once the transaction has gone through.
-function makeCodes() {
-    return {
-        publicCode: "TAG-" + randomString(8),
-        // 16 random characters in groups of four: K7QM-42HD-XWNP-R9TB
-        secretCode: randomString(16).match(/.{4}/g).join("-")
-    };
+// Made fresh each time someone presses Register, and only shown once the
+// transaction has gone through.
+function makePublicCode() {
+    return "TAG-" + randomString(8);
 }
 
 // Before registering there is no code yet, so the tag shows a placeholder instead of a QR
 function updateRegisterPreview() {
     const name = $("regName").value.trim() || "Your item";
     $("regTagPreview").innerHTML = tagHtml(name, null);
-}
-
-// The hash the contract expects: keccak256(abi.encode(publicCode, secretCode, owner))
-function makeSecretHash(publicCode, secretCode, owner) {
-    const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["string", "string", "address"],
-        [publicCode, secretCode, owner]
-    );
-    return ethers.keccak256(encoded);
 }
 
 async function handleRegistration() {
@@ -623,15 +739,13 @@ async function handleRegistration() {
         return;
     }
 
-    const { publicCode, secretCode } = makeCodes();
-    const secretHash = makeSecretHash(publicCode, secretCode, account);
+    const publicCode = makePublicCode();
 
-    const ok = await sendTx($("regBtn"), () => contract.registerItem(publicCode, name, secretHash));
-    if (!ok) return;   // nothing was registered, so the codes are simply thrown away
+    const ok = await sendTx($("regBtn"), () => contract.registerItem(publicCode, name));
+    if (!ok) return;   // nothing was registered, so the code is simply thrown away
 
-    justRegistered = { name, code: publicCode, secret: secretCode };
+    justRegistered = { name, code: publicCode };
     $("regDonePublic").textContent = publicCode;
-    $("regDoneSecret").textContent = secretCode;
     $("regForm").hidden = true;
     $("regDone").hidden = false;
     $("regTagPreview").innerHTML = tagHtml(name, publicCode);
@@ -733,25 +847,84 @@ async function handleReportFound() {
 // 11. Owner: claim the item back
 // ---------------------------------------------------------------
 
-async function handleClaim() {
-    if (!requireWallet()) return;
+// "Claim item" on an item card lands here with its code filled in
+function startClaim(code) {
+    $("claimPublicCode").value = code;
+    showPage("claim");
+    lookUpClaimItem();
+}
 
-    const publicCode = cleanCode($("claimPublicCode").value);
-    const secretCode = $("claimSecretCode").value.trim();
+// Shows the found report under the code field, so the owner can check it before confirming
+async function lookUpClaimItem() {
+    const box = $("claimSummary");
+    const code = cleanCode($("claimPublicCode").value);
+    $("claimPublicCode").value = code;
 
-    if (!publicCode || !secretCode) {
-        showToast("Enter both the public code and your secret code.", "error");
+    if (!code) {
+        box.hidden = true;
+        return;
+    }
+    if (!readContract) {
+        showToast("No wallet found. Install MetaMask or another Web3 wallet to continue.", "error");
         return;
     }
 
-    const ok = await sendTx($("claimBtn"), () => contract.claimItemAndReset(publicCode, secretCode));
-    if (!ok) return;
+    try {
+        const item = parseItem(await readContract.getItem(code));
+        box.hidden = false;
+
+        if (!item.owner) {
+            box.className = "lookup bad";
+            box.textContent = "No item has this code. Check the code on the tag.";
+        } else if (account && item.owner.toLowerCase() !== account.toLowerCase()) {
+            box.className = "lookup bad";
+            box.textContent = "This item belongs to a different wallet. Switch to the wallet that registered it.";
+        } else if (!item.isFound) {
+            box.className = "lookup warn";
+            box.innerHTML = `<strong>${esc(item.name)}</strong> hasn't been reported found, so there's nothing to claim.`;
+        } else {
+            box.className = "lookup";
+            box.innerHTML = `
+                <strong>${esc(item.name)}</strong> was reported found. Check the details, then claim it.
+                <dl class="details">
+                    <dt>Found at</dt><dd>${esc(item.locationName)}</dd>
+                    <dt>Reported</dt><dd>${formatDate(item.foundAt, true)}</dd>
+                    <dt>Contact</dt><dd>${item.contact ? esc(item.contact) : "None given"}</dd>
+                    <dt>Finder's wallet</dt><dd>${shortAddr(item.finder)}</dd>
+                </dl>`;
+        }
+    } catch (err) {
+        box.hidden = false;
+        box.className = "lookup bad";
+        box.textContent = friendlyError(err);
+    }
+}
+
+// Used by the "Claim item" button on an item and by the Claim page.
+// Returns true if it worked.
+async function claimItem(code, button) {
+    if (!requireWallet()) return false;
+
+    const ok = await sendTx(button, () => contract.claimItemAndReset(code));
+    if (!ok) return false;
 
     showToast("Claimed. Your tag is active again and can be reused.", "success");
-    $("claimPublicCode").value = "";
-    $("claimSecretCode").value = "";
     await loadMyItems();
-    showPage("items");
+    return true;
+}
+
+async function handleClaim() {
+    const publicCode = cleanCode($("claimPublicCode").value);
+    if (!publicCode) {
+        showToast("Enter the public code of the item you got back.", "error");
+        return;
+    }
+
+    if (await claimItem(publicCode, $("claimBtn"))) {
+        $("claimPublicCode").value = "";
+        $("claimSummary").hidden = true;
+        showPage("items");
+    }
 }
 
 
@@ -764,17 +937,18 @@ window.addEventListener("load", async () => {
     updateRegisterPreview();
 
     // The sample tag on the home page
-    $("sampleTag").innerHTML = tagHtml("Blue Backpack", "TAG-7KQ4M2XW");
+    $("sampleTag").innerHTML = tagHtml("Blue backpack", "TAG-7KQ4M2XW");
 
     // Reconnect quietly if this site is already approved in the wallet
-    // if (provider) {
-    //     try {
-    //         const accounts = await provider.send("eth_accounts", []);
-    //         if (accounts.length > 0) await setupSigner();
-    //     } catch (err) {
-    //         console.error(err);
-    //     }
-    // }
+    if (provider) {
+        checkContract();
+        try {
+            const accounts = await provider.send("eth_accounts", []);
+            if (accounts.length > 0) await setupSigner();
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     // Someone scanned a tag: the link looks like ?code=TAG-XXXXXXXX
     const codeFromLink = new URLSearchParams(window.location.search).get("code");
