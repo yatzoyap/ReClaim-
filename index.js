@@ -964,18 +964,18 @@ window.addEventListener("load", async () => {
     updateRegisterPreview();
 
     // The sample tag on the home page
-    $("sampleTag").innerHTML = tagHtml("Blue backpack", "TAG-7KQ4M2XW");
+    $("sampleTag").innerHTML = tagHtml("Blue Backpack", "TAG-7KQ4M2XW");
 
     // Reconnect quietly if this site is already approved in the wallet
-    if (provider) {
-        checkContract();
-        try {
-            const accounts = await provider.send("eth_accounts", []);
-            if (accounts.length > 0) await setupSigner();
-        } catch (err) {
-            console.error(err);
-        }
-    }
+    // if (provider) {
+    //     checkContract();
+    //     try {
+    //         const accounts = await provider.send("eth_accounts", []);
+    //         if (accounts.length > 0) await setupSigner();
+    //     } catch (err) {
+    //         console.error(err);
+    //     }
+    // }
 
     // Someone scanned a tag: the link looks like ?code=TAG-XXXXXXXX
     const codeFromLink = new URLSearchParams(window.location.search).get("code");
