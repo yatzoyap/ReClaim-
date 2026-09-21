@@ -227,6 +227,30 @@ async function setupSigner() {
     if (await checkContract()) await loadMyItems();
 }
 
+// Normal phone browsers (Safari, Chrome) have no wallet built in, so there is no window.ethereum.
+// MetaMask only adds it inside its own in-app browser. This offers a way in:
+// on a phone, a button that reopens this same page (including ?code=...) inside the MetaMask app.
+function showWalletHelp() {
+    if (window.ethereum) return;
+
+    const box = $("walletHelp");
+    const onPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (onPhone) {
+        const target = new URL(APP_URL || window.location.href);
+        target.search = window.location.search;   // keep ?code=... so a scanned tag still works
+        const deepLink = "https://metamask.app.link/dapp/" + target.host + target.pathname + target.search;
+        box.innerHTML = `
+            <p>Your browser doesn't have a wallet. Open this page inside the MetaMask app to continue.</p>
+            <a class="btn small primary" href="${esc(deepLink)}">Open in MetaMask</a>`;
+    } else {
+        box.innerHTML = `
+            <p>No wallet found. Install <a href="https://metamask.io/download/" target="_blank" rel="noopener">MetaMask</a>
+            or another Web3 wallet to continue.</p>`;
+    }
+    box.hidden = false;
+}
+
 // Makes sure there really is a contract at contractAddress on the network the wallet is using.
 // The usual reasons there isn't: the address in this file is an old deployment, or the wallet
 // is on a different network than the one the contract was deployed to.
@@ -780,7 +804,8 @@ async function lookUpFoundItem() {
         return;
     }
     if (!readContract) {
-        showToast("No wallet found. Install MetaMask or another Web3 wallet to continue.", "error");
+        // the banner under the header already explains this
+        if ($("walletHelp").hidden) showToast("No wallet found. Install MetaMask or another Web3 wallet to continue.", "error");
         return;
     }
 
@@ -865,7 +890,8 @@ async function lookUpClaimItem() {
         return;
     }
     if (!readContract) {
-        showToast("No wallet found. Install MetaMask or another Web3 wallet to continue.", "error");
+        // the banner under the header already explains this
+        if ($("walletHelp").hidden) showToast("No wallet found. Install MetaMask or another Web3 wallet to continue.", "error");
         return;
     }
 
@@ -934,6 +960,7 @@ async function handleClaim() {
 
 window.addEventListener("load", async () => {
     setupProvider();
+    showWalletHelp();
     updateRegisterPreview();
 
     // The sample tag on the home page

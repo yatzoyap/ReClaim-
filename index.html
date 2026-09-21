@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ReClaim: A Lost and Found DApp</title>
+  <title>ReClaim: BOT Lost and Found</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,6 +41,9 @@
 
   <!-- Appears when there is no ReClaim contract at the address in index.js -->
   <div id="netBanner" class="banner" role="alert" hidden></div>
+
+  <!-- Appears in browsers that have no wallet (most phone browsers) -->
+  <div id="walletHelp" class="banner info" hidden></div>
 
   <main>
 
@@ -181,7 +184,7 @@
 
           <label for="foundContact">How can the owner reach you? (optional)</label>
           <input id="foundContact" type="text" maxlength="80" placeholder="Phone number or Instagram handle" autocomplete="off">
-          <p class="hint">Do not save personal information as it is stored on the blockchain publicly.</p>
+          <p class="hint">Everything on this page is saved publicly on the blockchain, contact included.</p>
 
           <div class="form-actions">
             <button id="foundBtn" class="btn primary big" onclick="handleReportFound()">Report as found</button>
@@ -258,4 +261,4 @@
   <!-- The app itself -->
   <script src="index.js"></script>
 </body>
-</html>
+</html> 
