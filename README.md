@@ -52,7 +52,7 @@ ReClaim is built with a minimalist, single-file architecture to ensure maximum t
 
 1. **Scan Tag**: Use any smartphone camera to scan the QR code on the physical tag, or manually enter the public code (`TAG-XXXXXXXX`) on the **I Found Something** tab.
 2. **Set Location**: Type a location name or search using the map tool, then drop an exact pin on the interactive map (or click *Use My Location*).
-3. **Submit Report**: Optionally add contact info (phone number, social handle) and click **Report as Found**.
+3. **Submit Report**: Optionally add contact info (E-Mail, social handle) and click **Report as Found**.
 
 ---
 
@@ -63,7 +63,6 @@ ReClaim is built with a minimalist, single-file architecture to ensure maximum t
 | **BOT Chain Testnet (Chain ID 968)** | `0x4e151bEC8ee2287dc397Ac46596C53440F684b85` | [View on Explorer](https://scan.botchain.ai/address/0x4e151bEC8ee2287dc397Ac46596C53440F684b85) |
 | **BOT Chain Mainnet (Chain ID 677)** | `0x4e151bEC8ee2287dc397Ac46596C53440F684b85` | [View on Explorer](https://scan.botchain.ai/) |
 
-> *Note: Update `contractAddress` in `index.js` when deploying a new instance via Remix IDE.*
 
 ---
 

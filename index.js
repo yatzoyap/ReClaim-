@@ -6,12 +6,12 @@
 // ---------------------------------------------------------------
 
 // Address of ReClaim.sol after deploying it in Remix.
-const contractAddress = "0x4e151bEC8ee2287dc397Ac46596C53440F684b85";
+const contractAddress = "0x1258B7398418d5416B3bf63bb92fbf1c3f083FFa";
 
 // The QR code on a tag links to this page. Leave it empty to use whatever
 // address the page is opened from right now. Before you print real tags,
 // put your live site here, e.g. "https://yourname.github.io/reclaim/"
-const APP_URL = "";
+const APP_URL = "https://reclaim.my.id/";
 
 const contractABI = [
     "function registerItem(string publicCode, string name)",
@@ -711,7 +711,7 @@ function tagHtml(name, code) {
             <p class="tag-lead">Found this? Scan to tell the owner.</p>
             ${qr}
             <p class="tag-name">${esc(name)}</p>
-            <p class="tag-code">${code ? esc(code) : "Code coming soon"}</p>
+            <p class="tag-code">${code ? esc(code) : "Code will appear after registration"}</p>
         </div>`;
 }
 
@@ -967,15 +967,15 @@ window.addEventListener("load", async () => {
     $("sampleTag").innerHTML = tagHtml("Blue Backpack", "TAG-7KQ4M2XW");
 
     // Reconnect quietly if this site is already approved in the wallet
-    // if (provider) {
-    //     checkContract();
-    //     try {
-    //         const accounts = await provider.send("eth_accounts", []);
-    //         if (accounts.length > 0) await setupSigner();
-    //     } catch (err) {
-    //         console.error(err);
-    //     }
-    // }
+    if (provider) {
+        checkContract();
+        try {
+            const accounts = await provider.send("eth_accounts", []);
+            if (accounts.length > 0) await setupSigner();
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     // Someone scanned a tag: the link looks like ?code=TAG-XXXXXXXX
     const codeFromLink = new URLSearchParams(window.location.search).get("code");
