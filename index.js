@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------
 
 // Address of ReClaim.sol after deploying it in Remix.
-const contractAddress = "0x4e151bEC8ee2287dc397Ac46596C53440F684b85";
+const contractAddress = "0x45342eb4fD1215a9DaC5920De7863A2c7972cfCB";
 
 // The QR code on a tag links to this page. Leave it empty to use whatever
 // address the page is opened from right now. Before you print real tags,
