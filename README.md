@@ -60,8 +60,8 @@ ReClaim is built with a minimalist, single-file architecture to ensure maximum t
 
 | Network | Contract Address | Explorer Link |
 | :--- | :--- | :--- |
-| **BOT Chain Testnet (Chain ID 968)** | `0x4e151bEC8ee2287dc397Ac46596C53440F684b85` | [View on Explorer](https://scan.botchain.ai/address/0x4e151bEC8ee2287dc397Ac46596C53440F684b85) |
-| **BOT Chain Mainnet (Chain ID 677)** | `0x45342eb4fD1215a9DaC5920De7863A2c7972cfCB` | [View on Explorer](https://scan.botchain.ai/) |
+| **BOT Chain Testnet (Chain ID 968)** | `0x4e151bEC8ee2287dc397Ac46596C53440F684b85` | [View on Explorer](https://scan.bohr.life/address/0x4e151bEC8ee2287dc397Ac46596C53440F684b85) |
+| **BOT Chain Mainnet (Chain ID 677)** | `0x45342eb4fD1215a9DaC5920De7863A2c7972cfCB` | [View on Explorer](https://scan.botchain.ai/address/0x45342eb4fD1215a9DaC5920De7863A2c7972cfCB) |
 
 
 ---
